@@ -1,0 +1,955 @@
+<!doctype html>
+<html lang="ms">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Snake Belajar</title>
+  <script src="/_sdk/element_sdk.js"></script>
+  <style>
+        body {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Comic Sans MS', 'Chalkboard SE', 'Arial Rounded MT Bold', cursive, sans-serif;
+            overflow: hidden;
+        }
+
+        html, body, #app {
+            height: 100%;
+            width: 100%;
+        }
+
+        #app {
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            padding: 1.5rem;
+            box-sizing: border-box;
+        }
+
+        .question-bar {
+            padding: 0.8rem 1.5rem;
+            border-radius: 20px;
+            text-align: center;
+            margin-bottom: 1rem;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+        }
+
+        .question-text {
+            font-size: 1.8rem;
+            font-weight: bold;
+            margin: 0;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .game-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .controls-hint {
+            font-size: 1rem;
+            font-weight: bold;
+            padding: 0.5rem 1rem;
+            border-radius: 15px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        .answer-guide {
+            background: #FFFFFF;
+            padding: 1rem;
+            border-radius: 15px;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+            max-width: 180px;
+            font-size: 0.75rem;
+        }
+
+        .game-board {
+            position: relative;
+            border-radius: 20px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.2);
+            overflow: hidden;
+            transition: background-color 0.3s ease;
+        }
+
+        .game-board.flash-correct {
+            animation: flashBlue 0.5s ease;
+        }
+
+        .game-board.flash-wrong {
+            animation: flashRed 0.5s ease;
+        }
+
+        @keyframes flashBlue {
+            0%, 100% { background-color: transparent; }
+            50% { background-color: rgba(33, 150, 243, 0.5); }
+        }
+
+        @keyframes flashRed {
+            0%, 100% { background-color: transparent; }
+            50% { background-color: rgba(244, 67, 54, 0.5); }
+        }
+
+        .grid-container {
+            display: grid;
+            gap: 0px;
+            padding: 0px;
+        }
+
+        .grid-cell {
+            aspect-ratio: 1;
+            border-radius: 0px;
+            transition: all 0.2s;
+            background-color: #F0F0F0;
+            border: 1px solid #E0E0E0;
+        }
+
+        .snake-segment {
+            border-radius: 0px;
+            background: linear-gradient(135deg, #4CAF50, #81C784) !important;
+            box-shadow: inset 0 1px 3px rgba(255,255,255,0.5);
+            animation: pulse 0.5s ease-in-out;
+            border: 3px solid #2E7D32 !important;
+        }
+
+        .snake-head {
+            position: relative;
+            background: linear-gradient(135deg, #66BB6A, #4CAF50) !important;
+            border-radius: 0px;
+        }
+
+        .snake-head::before {
+            content: '';
+            position: absolute;
+            top: 30%;
+            left: 25%;
+            width: 6px;
+            height: 6px;
+            background: #000;
+            border-radius: 50%;
+            box-shadow: 12px 0 0 #000, 0 0 0 2px #FFF, 12px 0 0 2px #FFF;
+        }
+
+        .snake-head::after {
+            content: '';
+            position: absolute;
+            bottom: 25%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 8px;
+            height: 3px;
+            background: #000;
+            border-radius: 2px;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        .answer-cell {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .correct-answer-cell {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+
+
+        .score-panel {
+            text-align: center;
+            padding: 0.6rem;
+            border-radius: 15px;
+            font-size: 1.1rem;
+            font-weight: bold;
+        }
+
+        .celebration-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0,0,0,0.7);
+            z-index: 1000;
+        }
+
+        .celebration-overlay.active {
+            display: flex;
+        }
+
+        .wrong-answer-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0,0,0,0.7);
+            z-index: 1000;
+        }
+
+        .wrong-answer-overlay.active {
+            display: flex;
+        }
+
+        .wrong-answer-box {
+            padding: 3rem;
+            border-radius: 30px;
+            text-align: center;
+            background: #FF6B6B;
+            box-shadow: 0 10px 50px rgba(0,0,0,0.5);
+            animation: shake 0.5s ease-out;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-20px); }
+            50% { transform: translateX(20px); }
+            75% { transform: translateX(-20px); }
+        }
+
+        .wrong-answer-title {
+            font-size: 3.5rem;
+            font-weight: bold;
+            margin-bottom: 1rem;
+            color: #FFF;
+        }
+
+        .wrong-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+        }
+
+        .celebration-box {
+            padding: 3rem;
+            border-radius: 30px;
+            text-align: center;
+            box-shadow: 0 10px 50px rgba(0,0,0,0.5);
+            animation: popIn 0.5s ease-out;
+        }
+
+        @keyframes popIn {
+            0% { transform: scale(0); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        .celebration-title {
+            font-size: 3.5rem;
+            font-weight: bold;
+            margin-bottom: 1rem;
+        }
+
+        .stars {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            animation: sparkle 1s infinite;
+        }
+
+        @keyframes sparkle {
+            0%, 100% { transform: scale(1) rotate(0deg); }
+            50% { transform: scale(1.2) rotate(10deg); }
+        }
+
+        .play-again-btn {
+            font-size: 1.8rem;
+            padding: 1rem 2.5rem;
+            border: none;
+            border-radius: 30px;
+            cursor: pointer;
+            font-weight: bold;
+            box-shadow: 0 6px 0 rgba(0,0,0,0.2);
+            transition: transform 0.1s;
+            font-family: inherit;
+            margin-top: 1rem;
+        }
+
+        .play-again-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 9px 0 rgba(0,0,0,0.2);
+        }
+
+        .play-again-btn:active {
+            transform: translateY(3px);
+            box-shadow: 0 3px 0 rgba(0,0,0,0.2);
+        }
+
+        .control-buttons {
+            display: grid;
+            grid-template-columns: repeat(3, 60px);
+            grid-template-rows: repeat(2, 60px);
+            gap: 8px;
+            margin-top: 0.5rem;
+        }
+
+        .control-btn {
+            border: none;
+            border-radius: 12px;
+            font-size: 1.5rem;
+            cursor: pointer;
+            font-weight: bold;
+            box-shadow: 0 4px 0 rgba(0,0,0,0.2);
+            transition: transform 0.1s;
+            font-family: inherit;
+        }
+
+        .control-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 0 rgba(0,0,0,0.2);
+        }
+
+        .control-btn:active {
+            transform: translateY(2px);
+            box-shadow: 0 2px 0 rgba(0,0,0,0.2);
+        }
+
+        .control-btn:nth-child(1) {
+            grid-column: 2;
+            grid-row: 1;
+        }
+
+        .control-btn:nth-child(2) {
+            grid-column: 1;
+            grid-row: 2;
+        }
+
+        .control-btn:nth-child(3) {
+            grid-column: 3;
+            grid-row: 2;
+        }
+
+        .control-btn:nth-child(4) {
+            grid-column: 2;
+            grid-row: 2;
+        }
+
+        .start-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0,0,0,0.8);
+            z-index: 1000;
+        }
+
+        .start-overlay.hidden {
+            display: none;
+        }
+
+        .start-box {
+            padding: 3rem;
+            border-radius: 30px;
+            text-align: center;
+            background: #FFFFFF;
+            box-shadow: 0 10px 50px rgba(0,0,0,0.5);
+            max-width: 500px;
+        }
+
+        .start-title {
+            font-size: 3rem;
+            font-weight: bold;
+            margin-bottom: 1rem;
+            color: #333333;
+        }
+
+        .start-message {
+            font-size: 1.5rem;
+            margin: 1.5rem 0;
+            color: #666666;
+            line-height: 1.6;
+        }
+
+        .start-btn {
+            font-size: 2rem;
+            padding: 1.2rem 3rem;
+            border: none;
+            border-radius: 30px;
+            cursor: pointer;
+            font-weight: bold;
+            box-shadow: 0 6px 0 rgba(0,0,0,0.2);
+            transition: transform 0.1s;
+            font-family: inherit;
+            background: #4CAF50;
+            color: #FFFFFF;
+            margin-top: 1rem;
+        }
+
+        .start-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 9px 0 rgba(0,0,0,0.2);
+        }
+
+        .start-btn:active {
+            transform: translateY(3px);
+            box-shadow: 0 3px 0 rgba(0,0,0,0.2);
+        }
+
+        @media (max-width: 768px) {
+            .question-text {
+                font-size: 1.8rem;
+            }
+            .game-board {
+                max-width: 100%;
+            }
+            .control-buttons {
+                grid-template-columns: repeat(3, 60px);
+                grid-template-rows: repeat(2, 60px);
+            }
+        }
+    </style>
+  <style>@view-transition { navigation: auto; }</style>
+  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
+  <script src="https://cdn.tailwindcss.com" type="text/javascript"></script>
+ </head>
+ <body>
+  <div id="app">
+   <div class="question-bar" id="questionBar">
+    <h1 class="question-text" id="questionText">Apakah fungsi telefon pintar?</h1>
+   </div>
+   <div class="game-container">
+    <div class="controls-hint" id="controlsHint">
+     🎮 Gunakan anak panah atau butang di bawah
+    </div>
+    <div style="display: flex; gap: 1rem; align-items: flex-start; justify-content: center;">
+     <div class="answer-guide" id="answerGuide">
+      <div style="margin-bottom: 0.5rem; font-weight: bold; font-size: 0.85rem; text-align: center;">
+       Jawapan perlu cari:
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 0.3rem;"><span style="background: #9C27B0; padding: 0.25rem 0.5rem; border-radius: 8px; color: white; font-weight: bold; font-size: 0.7rem;">📚 Belajar</span> <span style="background: #9C27B0; padding: 0.25rem 0.5rem; border-radius: 8px; color: white; font-weight: bold; font-size: 0.7rem;">👕 Gosok baju</span> <span style="background: #9C27B0; padding: 0.25rem 0.5rem; border-radius: 8px; color: white; font-weight: bold; font-size: 0.7rem;">🔍 Cari maklumat</span> <span style="background: #9C27B0; padding: 0.25rem 0.5rem; border-radius: 8px; color: white; font-weight: bold; font-size: 0.7rem;">🍚 Makan nasi</span> <span style="background: #9C27B0; padding: 0.25rem 0.5rem; border-radius: 8px; color: white; font-weight: bold; font-size: 0.7rem;">📞 Jawab call</span> <span style="background: #9C27B0; padding: 0.25rem 0.5rem; border-radius: 8px; color: white; font-weight: bold; font-size: 0.7rem;">😴 Tidur</span> <span style="background: #9C27B0; padding: 0.25rem 0.5rem; border-radius: 8px; color: white; font-weight: bold; font-size: 0.7rem;">📷 Ambil foto</span> <span style="background: #9C27B0; padding: 0.25rem 0.5rem; border-radius: 8px; color: white; font-weight: bold; font-size: 0.7rem;">🎣 Mancing</span> <span style="background: #9C27B0; padding: 0.25rem 0.5rem; border-radius: 8px; color: white; font-weight: bold; font-size: 0.7rem;">⏰ Masa</span> <span style="background: #9C27B0; padding: 0.25rem 0.5rem; border-radius: 8px; color: white; font-weight: bold; font-size: 0.7rem;">🍳 Masak</span> <span style="background: #9C27B0; padding: 0.25rem 0.5rem; border-radius: 8px; color: white; font-weight: bold; font-size: 0.7rem;">🔐 Selamat</span> <span style="background: #9C27B0; padding: 0.25rem 0.5rem; border-radius: 8px; color: white; font-weight: bold; font-size: 0.7rem;">⚽ Bola</span> <span style="background: #9C27B0; padding: 0.25rem 0.5rem; border-radius: 8px; color: white; font-weight: bold; font-size: 0.7rem;">🎵 Hiburan</span> <span style="background: #9C27B0; padding: 0.25rem 0.5rem; border-radius: 8px; color: white; font-weight: bold; font-size: 0.7rem;">🚿 Mandi</span> <span style="background: #9C27B0; padding: 0.25rem 0.5rem; border-radius: 8px; color: white; font-weight: bold; font-size: 0.7rem;">🗺️ Pandu</span> <span style="background: #9C27B0; padding: 0.25rem 0.5rem; border-radius: 8px; color: white; font-weight: bold; font-size: 0.7rem;">🌿 Potong rumput</span> <span style="background: #9C27B0; padding: 0.25rem 0.5rem; border-radius: 8px; color: white; font-weight: bold; font-size: 0.7rem;">📖 Buku digital</span> <span style="background: #9C27B0; padding: 0.25rem 0.5rem; border-radius: 8px; color: white; font-weight: bold; font-size: 0.7rem;">🚗 Cuci kereta</span> <span style="background: #9C27B0; padding: 0.25rem 0.5rem; border-radius: 8px; color: white; font-weight: bold; font-size: 0.7rem;">📅 Kalendar</span> <span style="background: #9C27B0; padding: 0.25rem 0.5rem; border-radius: 8px; color: white; font-weight: bold; font-size: 0.7rem;">🧹 Sapu</span>
+      </div>
+     </div>
+     <div style="display: flex; flex-direction: column; align-items: center; gap: 0.5rem;">
+      <div class="game-board" id="gameBoard">
+       <div class="grid-container" id="gridContainer"></div>
+      </div>
+      <div class="score-panel" id="scorePanel">
+       Skor: 0 | Panjang: 3
+      </div>
+      <div class="control-buttons"><button class="control-btn" id="btnUp">⬆️</button> <button class="control-btn" id="btnLeft">⬅️</button> <button class="control-btn" id="btnRight">➡️</button> <button class="control-btn" id="btnDown">⬇️</button>
+      </div>
+     </div>
+    </div>
+   </div>
+   <div class="celebration-overlay" id="celebrationOverlay">
+    <div class="celebration-box" id="celebrationBox">
+     <div class="celebration-title" id="celebrationTitle">
+      🎉 Tahniah! Betul! 🎉
+     </div>
+     <div class="stars">
+      ⭐⭐⭐
+     </div>
+     <p style="font-size: 1.8rem; margin: 0;" id="successMessage">Ular anda berjaya!</p><button class="play-again-btn" id="playAgainBtn">Main Lagi</button>
+    </div>
+   </div>
+   <div class="wrong-answer-overlay" id="wrongAnswerOverlay">
+    <div class="wrong-answer-box">
+     <div class="wrong-answer-title">
+      ❌ Jawapan Salah! ❌
+     </div>
+     <div class="wrong-icon">
+      😢
+     </div>
+     <p style="font-size: 1.8rem; margin: 0; color: #FFF;">Cuba lagi!</p><button class="play-again-btn" id="tryAgainBtn" style="background: #FFF; color: #FF6B6B;">Cuba Lagi</button>
+    </div>
+   </div>
+   <div class="start-overlay" id="startOverlay">
+    <div class="start-box">
+     <div class="start-title">
+      🎮 Snake Belajar 🐍
+     </div>
+     <div class="start-message">
+      📚 Baca soalan dan jawapan dengan teliti!<br><br>
+       🐍 Kumpulkan semua jawapan BETUL untuk menang<br><br>
+       ⚠️ Elakkan jawapan SALAH atau ular akan mengecil!
+     </div><button class="start-btn" id="startBtn">🚀 MULA MAIN!</button>
+    </div>
+   </div>
+  </div>
+  <script>
+        const defaultConfig = {
+            background_color: '#87CEEB',
+            board_color: '#FFFFFF',
+            text_color: '#333333',
+            snake_color: '#4CAF50',
+            question_bar_color: '#FFD700',
+            font_family: 'Comic Sans MS',
+            font_size: 16,
+            question_text: 'Apakah fungsi telefon pintar?',
+            correct_answer: 'Belajar, Mencari maklumat, Jawab panggilan, Ambil gambar, Tengok masa',
+            success_message: 'Tahniah! Betul!'
+        };
+
+        const GRID_WIDTH = 30;
+        const GRID_HEIGHT = 20;
+        const CELL_SIZE = 25;
+        
+        let snake = [{x: 7, y: 7}, {x: 6, y: 7}, {x: 5, y: 7}];
+        let direction = {x: 1, y: 0};
+        let nextDirection = {x: 1, y: 0};
+        let score = 0;
+        let gameInterval;
+        let isGameRunning = false;
+
+        const wrongAnswers = [
+            {text: 'Menggosok baju', icon: '👕'},
+            {text: 'Makan nasi', icon: '🍚'},
+            {text: 'Tidur', icon: '😴'},
+            {text: 'Memancing', icon: '🎣'},
+            {text: 'Memasak', icon: '🍳'},
+            {text: 'Bermain bola', icon: '⚽'},
+            {text: 'Mandi', icon: '🚿'},
+            {text: 'Memotong rumput', icon: '🌿'},
+            {text: 'Mencuci kereta', icon: '🚗'},
+            {text: 'Menyapu lantai', icon: '🧹'}
+        ];
+
+        let correctAnswerPositions = [];
+        let wrongAnswerPositions = [];
+        let collectedCorrectAnswers = new Set();
+        let collectedWrongAnswers = new Set();
+
+        function createGrid() {
+            const container = document.getElementById('gridContainer');
+            container.innerHTML = '';
+            container.style.gridTemplateColumns = `repeat(${GRID_WIDTH}, 1fr)`;
+            container.style.gridTemplateRows = `repeat(${GRID_HEIGHT}, 1fr)`;
+            container.style.width = `${GRID_WIDTH * CELL_SIZE}px`;
+            container.style.height = `${GRID_HEIGHT * CELL_SIZE}px`;
+            
+            for (let i = 0; i < GRID_WIDTH * GRID_HEIGHT; i++) {
+                const cell = document.createElement('div');
+                cell.className = 'grid-cell';
+                cell.style.width = `${CELL_SIZE}px`;
+                cell.style.height = `${CELL_SIZE}px`;
+                container.appendChild(cell);
+            }
+        }
+
+        function placeAnswers() {
+            // Place 10 correct answers with different icons
+            correctAnswerPositions = [
+                {x: 15, y: 3, icon: '📚', label: 'Belajar'},
+                {x: 5, y: 8, icon: '🔍', label: 'Mencari maklumat'},
+                {x: 22, y: 12, icon: '📞', label: 'Jawab panggilan'},
+                {x: 28, y: 16, icon: '📷', label: 'Ambil gambar'},
+                {x: 7, y: 17, icon: '⏰', label: 'Tengok masa'},
+                {x: 18, y: 3, icon: '🔐', label: 'Keselamatan'},
+                {x: 25, y: 7, icon: '🎵', label: 'Hiburan terkawal'},
+                {x: 9, y: 15, icon: '🗺️', label: 'Pandu arah'},
+                {x: 20, y: 5, icon: '📖', label: 'Buku digital'},
+                {x: 12, y: 10, icon: '📅', label: 'Kalendar'}
+            ];
+            
+            // Place 10 wrong answers (different icons)
+            wrongAnswerPositions = [
+                {x: 3, y: 5, icon: '👕'},
+                {x: 10, y: 6, icon: '🍚'},
+                {x: 27, y: 9, icon: '😴'},
+                {x: 6, y: 14, icon: '🎣'},
+                {x: 24, y: 18, icon: '🍳'},
+                {x: 1, y: 10, icon: '⚽'},
+                {x: 16, y: 2, icon: '🚿'},
+                {x: 28, y: 13, icon: '🌿'},
+                {x: 14, y: 19, icon: '🚗'},
+                {x: 21, y: 4, icon: '🧹'}
+            ];
+        }
+
+        function drawSnake() {
+            const cells = document.querySelectorAll('.grid-cell');
+            cells.forEach(cell => {
+                cell.classList.remove('snake-segment', 'snake-head', 'answer-cell', 'correct-answer-cell');
+                cell.style.backgroundColor = '';
+                cell.innerHTML = '';
+            });
+            
+            // Draw correct answers that haven't been collected
+            correctAnswerPositions.forEach((pos, index) => {
+                if (!collectedCorrectAnswers.has(index)) {
+                    const cellIndex = pos.y * GRID_WIDTH + pos.x;
+                    const cell = cells[cellIndex];
+                    if (cell) {
+                        cell.classList.add('correct-answer-cell');
+                        cell.style.backgroundColor = '#4CAF50';
+                        cell.style.border = '2px solid #2E7D32';
+                        cell.innerHTML = `<span style="font-size: 1.2rem;">${pos.icon}</span>`;
+                    }
+                }
+            });
+            
+            // Draw wrong answers that haven't been collected
+            const wrongColors = ['#FF6B6B', '#4ECDC4', '#A8E6CF', '#FFD93D', '#FF9FF3', '#FFA07A', '#DDA0DD', '#F0E68C', '#87CEFA', '#FFB6C1'];
+            wrongAnswerPositions.forEach((pos, index) => {
+                if (!collectedWrongAnswers.has(index)) {
+                    const cellIndex = pos.y * GRID_WIDTH + pos.x;
+                    const cell = cells[cellIndex];
+                    if (cell) {
+                        cell.classList.add('answer-cell');
+                        cell.style.backgroundColor = wrongColors[index];
+                        cell.style.border = '2px solid rgba(0,0,0,0.3)';
+                        cell.innerHTML = `<span style="font-size: 1.2rem;">${pos.icon}</span>`;
+                    }
+                }
+            });
+            
+            // Draw snake
+            snake.forEach((segment, index) => {
+                const cellIndex = segment.y * GRID_WIDTH + segment.x;
+                const cell = cells[cellIndex];
+                if (cell) {
+                    cell.classList.add('snake-segment');
+                    if (index === 0) {
+                        cell.classList.add('snake-head');
+                    }
+                }
+            });
+        }
+
+        function moveSnake() {
+            if (!isGameRunning) return;
+            
+            direction = nextDirection;
+            
+            const head = {...snake[0]};
+            head.x += direction.x;
+            head.y += direction.y;
+            
+            // Wrap around walls (teleport to opposite side)
+            if (head.x < 0) head.x = GRID_WIDTH - 1;
+            if (head.x >= GRID_WIDTH) head.x = 0;
+            if (head.y < 0) head.y = GRID_HEIGHT - 1;
+            if (head.y >= GRID_HEIGHT) head.y = 0;
+            
+            // Check collision with self
+            if (snake.some(segment => segment.x === head.x && segment.y === head.y)) {
+                gameOver(false);
+                return;
+            }
+            
+            snake.unshift(head);
+            
+            // Check if snake hit any correct answer
+            let hitCorrectAnswer = false;
+            correctAnswerPositions.forEach((pos, index) => {
+                if (!collectedCorrectAnswers.has(index) && head.x === pos.x && head.y === pos.y) {
+                    hitCorrectAnswer = true;
+                    collectedCorrectAnswers.add(index);
+                    score += 10;
+                    
+                    // Flash blue for correct answer
+                    const gameBoard = document.getElementById('gameBoard');
+                    gameBoard.classList.add('flash-correct');
+                    setTimeout(() => gameBoard.classList.remove('flash-correct'), 500);
+                    
+                    // Check if all correct answers have been collected
+                    if (collectedCorrectAnswers.size === correctAnswerPositions.length) {
+                        drawSnake();
+                        updateScore();
+                        gameOver(true);
+                        return;
+                    }
+                }
+            });
+
+            if (hitCorrectAnswer) {
+                // Don't remove tail - snake grows by 1
+                drawSnake();
+                updateScore();
+                return;
+            }
+
+            // Check if snake hit any wrong answer
+            let hitWrongAnswer = false;
+            wrongAnswerPositions.forEach((pos, index) => {
+                if (!collectedWrongAnswers.has(index) && head.x === pos.x && head.y === pos.y) {
+                    hitWrongAnswer = true;
+                    collectedWrongAnswers.add(index);
+                    
+                    // Flash red for wrong answer
+                    const gameBoard = document.getElementById('gameBoard');
+                    gameBoard.classList.add('flash-wrong');
+                    setTimeout(() => gameBoard.classList.remove('flash-wrong'), 500);
+                }
+            });
+            
+            // Remove tail (normal move)
+            snake.pop();
+            
+            // If hit wrong answer, remove one more segment as penalty
+            if (hitWrongAnswer && snake.length > 0) {
+                snake.pop();
+                score = Math.max(0, score - 5); // Also reduce score
+            }
+            
+            // Check if snake is completely gone
+            if (snake.length === 0) {
+                gameOver(false);
+                return;
+            }
+            
+            drawSnake();
+            updateScore();
+        }
+
+        function changeDirection(newDirection) {
+            // Prevent reversing
+            if (newDirection.x === -direction.x && newDirection.y === -direction.y) return;
+            nextDirection = newDirection;
+        }
+
+        function updateScore() {
+            document.getElementById('scorePanel').textContent = `Skor: ${score} | Panjang: ${snake.length}`;
+        }
+
+        function gameOver(success) {
+            isGameRunning = false;
+            clearInterval(gameInterval);
+            
+            if (success) {
+                document.getElementById('successMessage').textContent = `Markah Akhir: ${snake.length} pixel!`;
+                document.getElementById('celebrationOverlay').classList.add('active');
+            } else {
+                document.querySelector('.wrong-answer-box p').textContent = `Markah Akhir: ${snake.length} pixel. Cuba lagi!`;
+                document.getElementById('wrongAnswerOverlay').classList.add('active');
+            }
+        }
+
+        function resetGame() {
+            snake = [{x: 7, y: 7}, {x: 6, y: 7}, {x: 5, y: 7}];
+            direction = {x: 1, y: 0};
+            nextDirection = {x: 1, y: 0};
+            score = 0;
+            collectedCorrectAnswers.clear();
+            collectedWrongAnswers.clear();
+            placeAnswers();
+            drawSnake();
+            updateScore();
+            startGame();
+        }
+
+        function startGame() {
+            isGameRunning = true;
+            document.getElementById('startOverlay').classList.add('hidden');
+            gameInterval = setInterval(moveSnake, 300);
+        }
+
+        // Start button
+        document.getElementById('startBtn').addEventListener('click', () => {
+            startGame();
+        });
+
+        // Keyboard controls
+        document.addEventListener('keydown', (e) => {
+            if (!isGameRunning) return;
+            
+            switch(e.key) {
+                case 'ArrowUp':
+                    e.preventDefault();
+                    changeDirection({x: 0, y: -1});
+                    break;
+                case 'ArrowDown':
+                    e.preventDefault();
+                    changeDirection({x: 0, y: 1});
+                    break;
+                case 'ArrowLeft':
+                    e.preventDefault();
+                    changeDirection({x: -1, y: 0});
+                    break;
+                case 'ArrowRight':
+                    e.preventDefault();
+                    changeDirection({x: 1, y: 0});
+                    break;
+            }
+        });
+
+        // Button controls
+        document.getElementById('btnUp').addEventListener('click', () => {
+            if (isGameRunning) changeDirection({x: 0, y: -1});
+        });
+        document.getElementById('btnDown').addEventListener('click', () => {
+            if (isGameRunning) changeDirection({x: 0, y: 1});
+        });
+        document.getElementById('btnLeft').addEventListener('click', () => {
+            if (isGameRunning) changeDirection({x: -1, y: 0});
+        });
+        document.getElementById('btnRight').addEventListener('click', () => {
+            if (isGameRunning) changeDirection({x: 1, y: 0});
+        });
+
+        document.getElementById('playAgainBtn').addEventListener('click', () => {
+            document.getElementById('celebrationOverlay').classList.remove('active');
+            resetGame();
+        });
+
+        document.getElementById('tryAgainBtn').addEventListener('click', () => {
+            document.getElementById('wrongAnswerOverlay').classList.remove('active');
+            resetGame();
+        });
+
+        async function onConfigChange(config) {
+            const customFont = config.font_family || defaultConfig.font_family;
+            const baseFontStack = 'Arial, sans-serif';
+            const baseSize = config.font_size || defaultConfig.font_size;
+            const backgroundColor = config.background_color || defaultConfig.background_color;
+            const boardColor = config.board_color || defaultConfig.board_color;
+            const textColor = config.text_color || defaultConfig.text_color;
+            const snakeColor = config.snake_color || defaultConfig.snake_color;
+            const questionBarColor = config.question_bar_color || defaultConfig.question_bar_color;
+
+            document.body.style.fontFamily = `${customFont}, ${baseFontStack}`;
+            document.body.style.fontSize = `${baseSize}px`;
+
+            document.getElementById('app').style.backgroundColor = backgroundColor;
+            
+            document.querySelector('.question-bar').style.backgroundColor = questionBarColor;
+            document.getElementById('questionText').textContent = config.question_text || defaultConfig.question_text;
+            document.getElementById('questionText').style.fontSize = `${baseSize * 1.5625}px`;
+            document.getElementById('questionText').style.color = textColor;
+
+            document.querySelector('.game-board').style.backgroundColor = boardColor;
+            
+            document.querySelectorAll('.grid-cell').forEach(cell => {
+                cell.style.backgroundColor = '#F0F0F0';
+            });
+
+            const styleTag = document.getElementById('dynamicSnakeStyle') || document.createElement('style');
+            styleTag.id = 'dynamicSnakeStyle';
+            styleTag.textContent = `
+                .snake-segment {
+                    background: linear-gradient(135deg, ${snakeColor}, ${snakeColor}CC) !important;
+                    border-color: ${snakeColor}DD !important;
+                }
+                .snake-head {
+                    background: linear-gradient(135deg, ${snakeColor}EE, ${snakeColor}) !important;
+                }
+            `;
+            if (!document.getElementById('dynamicSnakeStyle')) {
+                document.head.appendChild(styleTag);
+            }
+
+            document.querySelector('.controls-hint').style.backgroundColor = '#FFFFFF';
+            document.querySelector('.controls-hint').style.color = textColor;
+            document.querySelector('.controls-hint').style.fontSize = `${baseSize * 0.8125}px`;
+
+            document.querySelector('.answer-guide').style.backgroundColor = '#FFFFFF';
+            document.querySelector('.answer-guide').style.color = textColor;
+
+            document.querySelector('.score-panel').style.backgroundColor = '#FFFFFF';
+            document.querySelector('.score-panel').style.color = textColor;
+            document.querySelector('.score-panel').style.fontSize = `${baseSize * 0.9375}px`;
+
+            document.querySelectorAll('.control-btn').forEach(btn => {
+                btn.style.backgroundColor = questionBarColor;
+                btn.style.color = textColor;
+            });
+
+            document.querySelector('.celebration-box').style.backgroundColor = '#FFFFFF';
+            document.getElementById('celebrationTitle').textContent = config.success_message || defaultConfig.success_message;
+            document.getElementById('celebrationTitle').style.fontSize = `${baseSize * 2.1875}px`;
+            document.getElementById('celebrationTitle').style.color = textColor;
+
+            document.getElementById('successMessage').style.color = textColor;
+            document.getElementById('successMessage').style.fontSize = `${baseSize * 1.125}px`;
+
+            document.querySelector('.play-again-btn').style.backgroundColor = snakeColor;
+            document.querySelector('.play-again-btn').style.color = '#FFFFFF';
+            document.querySelector('.play-again-btn').style.fontSize = `${baseSize * 1.125}px`;
+
+
+        }
+
+        if (window.elementSdk) {
+            window.elementSdk.init({
+                defaultConfig,
+                onConfigChange,
+                mapToCapabilities: (config) => ({
+                    recolorables: [
+                        {
+                            get: () => config.background_color || defaultConfig.background_color,
+                            set: (value) => {
+                                config.background_color = value;
+                                window.elementSdk.setConfig({ background_color: value });
+                            }
+                        },
+                        {
+                            get: () => config.board_color || defaultConfig.board_color,
+                            set: (value) => {
+                                config.board_color = value;
+                                window.elementSdk.setConfig({ board_color: value });
+                            }
+                        },
+                        {
+                            get: () => config.text_color || defaultConfig.text_color,
+                            set: (value) => {
+                                config.text_color = value;
+                                window.elementSdk.setConfig({ text_color: value });
+                            }
+                        },
+                        {
+                            get: () => config.snake_color || defaultConfig.snake_color,
+                            set: (value) => {
+                                config.snake_color = value;
+                                window.elementSdk.setConfig({ snake_color: value });
+                            }
+                        },
+                        {
+                            get: () => config.question_bar_color || defaultConfig.question_bar_color,
+                            set: (value) => {
+                                config.question_bar_color = value;
+                                window.elementSdk.setConfig({ question_bar_color: value });
+                            }
+                        }
+                    ],
+                    borderables: [],
+                    fontEditable: {
+                        get: () => config.font_family || defaultConfig.font_family,
+                        set: (value) => {
+                            config.font_family = value;
+                            window.elementSdk.setConfig({ font_family: value });
+                        }
+                    },
+                    fontSizeable: {
+                        get: () => config.font_size || defaultConfig.font_size,
+                        set: (value) => {
+                            config.font_size = value;
+                            window.elementSdk.setConfig({ font_size: value });
+                        }
+                    }
+                }),
+                mapToEditPanelValues: (config) => new Map([
+                    ['question_text', config.question_text || defaultConfig.question_text],
+                    ['correct_answer', config.correct_answer || defaultConfig.correct_answer],
+                    ['success_message', config.success_message || defaultConfig.success_message]
+                ])
+            });
+        }
+
+        // Initialize game
+        createGrid();
+        placeAnswers();
+        drawSnake();
+        updateScore();
+        onConfigChange(defaultConfig);
+        // Don't start automatically - wait for user to click start button
+    </script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9aca51adb27c97fa',t:'MTc2NTUxMjA3MS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
