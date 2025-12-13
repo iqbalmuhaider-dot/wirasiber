@@ -2,8 +2,8 @@
 <html lang="ms">
  <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Snake Belajar</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Captain Pillar</title>
   <script src="/_sdk/element_sdk.js"></script>
   <style>
         body {
@@ -11,945 +11,691 @@
             margin: 0;
             padding: 0;
             font-family: 'Comic Sans MS', 'Chalkboard SE', 'Arial Rounded MT Bold', cursive, sans-serif;
-            overflow: hidden;
-        }
-
-        html, body, #app {
-            height: 100%;
-            width: 100%;
+            overflow: hidden; /* No scroll on body */
+            background-color: #87CEEB;
+            height: 100vh;
+            width: 100vw;
         }
 
         #app {
-            overflow-y: auto;
+            height: 100%;
+            width: 100%;
             display: flex;
             flex-direction: column;
-            padding: 1.5rem;
+            padding: 0.5rem;
             box-sizing: border-box;
+            position: relative;
+        }
+
+        /* --- HEADER SECTION --- */
+        .header-section {
+            flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+            z-index: 10;
         }
 
         .question-bar {
-            padding: 0.8rem 1.5rem;
-            border-radius: 20px;
+            padding: 0.6rem 1.5rem;
+            border-radius: 15px;
             text-align: center;
-            margin-bottom: 1rem;
-            box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.12);
+            background: #FFD700;
+            width: 100%;
+            max-width: 800px;
         }
 
         .question-text {
-            font-size: 1.8rem;
+            font-size: clamp(1.2rem, 4vw, 1.8rem); /* Responsive text size */
             font-weight: bold;
             margin: 0;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+            color: #333;
+            text-shadow: 1px 1px 0px rgba(255,255,255,0.4);
         }
 
+        .controls-bar {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .btn-small {
+            background: white;
+            border: 2px solid #ddd;
+            padding: 0.4rem 1rem;
+            border-radius: 20px;
+            font-weight: bold;
+            font-family: inherit;
+            cursor: pointer;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            transition: all 0.2s;
+        }
+
+        .btn-small:hover { transform: translateY(-2px); }
+        .btn-small:active { transform: translateY(0); }
+
+        .btn-restart { color: #d32f2f; border-color: #ffcdd2; background: #ffebee; }
+        .btn-fullscreen { color: #1976d2; border-color: #bbdefb; background: #e3f2fd; }
+
+        /* --- MAIN GAME LAYOUT --- */
         .game-container {
+            flex: 1;
+            display: flex;
+            overflow: hidden; /* Prevent scrolling inside container */
+            gap: 1rem;
+            justify-content: center;
+            align-items: flex-start;
+            height: 100%;
+        }
+
+        /* LEFT SIDEBAR (Legend) */
+        .sidebar {
+            width: 220px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 15px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            height: 95%; /* Fit within container */
+            border: 2px solid #fff;
+        }
+
+        .sidebar-header {
+            background: #f0f4f8;
+            padding: 0.8rem;
+            text-align: center;
+            font-weight: bold;
+            border-bottom: 2px solid #ddd;
+            font-size: 0.95rem;
+            color: #444;
+        }
+
+        .sidebar-content {
+            overflow-y: auto;
+            padding: 0.5rem;
+            flex: 1;
+        }
+
+        .mini-legend-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.4rem;
+            border-bottom: 1px solid #eee;
+            font-size: 0.85rem;
+        }
+        
+        .mini-legend-item:last-child { border-bottom: none; }
+        .mini-legend-icon { font-size: 1.2rem; min-width: 25px; text-align: center; }
+
+        /* CENTER GAME AREA */
+        .game-area {
             flex: 1;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            gap: 0.5rem;
-        }
-
-        .controls-hint {
-            font-size: 1rem;
-            font-weight: bold;
-            padding: 0.5rem 1rem;
-            border-radius: 15px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-        }
-
-        .answer-guide {
-            background: #FFFFFF;
-            padding: 1rem;
-            border-radius: 15px;
-            box-shadow: 0 6px 20px rgba(0,0,0,0.15);
-            max-width: 180px;
-            font-size: 0.75rem;
+            height: 100%;
+            position: relative;
         }
 
         .game-board {
-            position: relative;
-            border-radius: 20px;
+            background: #FFFFFF;
+            border: 4px solid #fff;
+            border-radius: 12px;
             box-shadow: 0 8px 30px rgba(0,0,0,0.2);
-            overflow: hidden;
-            transition: background-color 0.3s ease;
+            /* Size controlled by JS */
         }
 
-        .game-board.flash-correct {
-            animation: flashBlue 0.5s ease;
-        }
+        .game-board.flash-correct { animation: flashBlue 0.5s ease; }
+        .game-board.flash-wrong { animation: flashRed 0.5s ease; }
 
-        .game-board.flash-wrong {
-            animation: flashRed 0.5s ease;
-        }
-
-        @keyframes flashBlue {
-            0%, 100% { background-color: transparent; }
-            50% { background-color: rgba(33, 150, 243, 0.5); }
-        }
-
-        @keyframes flashRed {
-            0%, 100% { background-color: transparent; }
-            50% { background-color: rgba(244, 67, 54, 0.5); }
-        }
+        @keyframes flashBlue { 0%, 100% { border-color: #fff; } 50% { border-color: #2196F3; } }
+        @keyframes flashRed { 0%, 100% { border-color: #fff; } 50% { border-color: #F44336; } }
 
         .grid-container {
             display: grid;
-            gap: 0px;
-            padding: 0px;
+            /* Grid Template set by JS */
         }
 
         .grid-cell {
-            aspect-ratio: 1;
-            border-radius: 0px;
-            transition: all 0.2s;
-            background-color: #F0F0F0;
-            border: 1px solid #E0E0E0;
+            background-color: #F8F9FA;
+            border: 1px solid #EEEEEE;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            /* Font size scaled by JS */
+            line-height: 1;
         }
 
+        /* Snake Styles */
         .snake-segment {
-            border-radius: 0px;
-            background: linear-gradient(135deg, #4CAF50, #81C784) !important;
-            box-shadow: inset 0 1px 3px rgba(255,255,255,0.5);
-            animation: pulse 0.5s ease-in-out;
-            border: 3px solid #2E7D32 !important;
+            background: #4CAF50 !important;
+            border-radius: 50%;
+            border: 1px solid #2E7D32 !important;
+            z-index: 2;
+            transform: scale(0.92);
         }
 
         .snake-head {
-            position: relative;
-            background: linear-gradient(135deg, #66BB6A, #4CAF50) !important;
-            border-radius: 0px;
-        }
-
-        .snake-head::before {
-            content: '';
-            position: absolute;
-            top: 30%;
-            left: 25%;
-            width: 6px;
-            height: 6px;
-            background: #000;
+            background: #388E3C !important;
+            z-index: 3;
             border-radius: 50%;
-            box-shadow: 12px 0 0 #000, 0 0 0 2px #FFF, 12px 0 0 2px #FFF;
+            transform: scale(1);
+            position: relative;
         }
+        /* Eyes */
+        .snake-head::before, .snake-head::after {
+            content: ''; position: absolute; top: 20%; width: 25%; height: 25%; background: white; border-radius: 50%;
+        }
+        .snake-head::before { left: 20%; }
+        .snake-head::after { right: 20%; }
 
-        .snake-head::after {
-            content: '';
+        .score-float {
             position: absolute;
-            bottom: 25%;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 8px;
-            height: 3px;
-            background: #000;
-            border-radius: 2px;
-        }
-
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.1); }
-        }
-
-        .answer-cell {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .correct-answer-cell {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-
-
-        .score-panel {
-            text-align: center;
-            padding: 0.6rem;
-            border-radius: 15px;
+            top: 0px;
+            right: 0px;
+            background: rgba(255,255,255,0.9);
+            padding: 0.5rem 1rem;
+            border-radius: 0 0 0 15px;
+            font-weight: bold;
+            box-shadow: -2px 2px 5px rgba(0,0,0,0.1);
             font-size: 1.1rem;
-            font-weight: bold;
+            z-index: 5;
         }
 
-        .celebration-overlay {
+        /* --- OVERLAYS --- */
+        .overlay {
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85);
             display: none;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
-            background: rgba(0,0,0,0.7);
-            z-index: 1000;
+            z-index: 100;
+            backdrop-filter: blur(5px);
         }
+        .overlay.active { display: flex; }
 
-        .celebration-overlay.active {
-            display: flex;
-        }
-
-        .wrong-answer-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            display: none;
-            align-items: center;
-            justify-content: center;
-            background: rgba(0,0,0,0.7);
-            z-index: 1000;
-        }
-
-        .wrong-answer-overlay.active {
-            display: flex;
-        }
-
-        .wrong-answer-box {
-            padding: 3rem;
+        .modal-box {
+            background: white;
+            padding: 2rem;
             border-radius: 30px;
             text-align: center;
-            background: #FF6B6B;
-            box-shadow: 0 10px 50px rgba(0,0,0,0.5);
-            animation: shake 0.5s ease-out;
+            max-width: 600px;
+            width: 90%;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+            animation: popIn 0.4s;
         }
 
-        @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            25% { transform: translateX(-20px); }
-            50% { transform: translateX(20px); }
-            75% { transform: translateX(-20px); }
-        }
-
-        .wrong-answer-title {
-            font-size: 3.5rem;
-            font-weight: bold;
-            margin-bottom: 1rem;
-            color: #FFF;
-        }
-
-        .wrong-icon {
-            font-size: 4rem;
-            margin-bottom: 1rem;
-        }
-
-        .celebration-box {
-            padding: 3rem;
-            border-radius: 30px;
-            text-align: center;
-            box-shadow: 0 10px 50px rgba(0,0,0,0.5);
-            animation: popIn 0.5s ease-out;
-        }
-
-        @keyframes popIn {
-            0% { transform: scale(0); }
-            50% { transform: scale(1.1); }
-            100% { transform: scale(1); }
-        }
-
-        .celebration-title {
-            font-size: 3.5rem;
-            font-weight: bold;
-            margin-bottom: 1rem;
-        }
-
-        .stars {
-            font-size: 4rem;
-            margin-bottom: 1rem;
-            animation: sparkle 1s infinite;
-        }
-
-        @keyframes sparkle {
-            0%, 100% { transform: scale(1) rotate(0deg); }
-            50% { transform: scale(1.2) rotate(10deg); }
-        }
-
-        .play-again-btn {
-            font-size: 1.8rem;
-            padding: 1rem 2.5rem;
-            border: none;
-            border-radius: 30px;
-            cursor: pointer;
-            font-weight: bold;
-            box-shadow: 0 6px 0 rgba(0,0,0,0.2);
-            transition: transform 0.1s;
-            font-family: inherit;
-            margin-top: 1rem;
-        }
-
-        .play-again-btn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 9px 0 rgba(0,0,0,0.2);
-        }
-
-        .play-again-btn:active {
-            transform: translateY(3px);
-            box-shadow: 0 3px 0 rgba(0,0,0,0.2);
-        }
-
-        .control-buttons {
-            display: grid;
-            grid-template-columns: repeat(3, 60px);
-            grid-template-rows: repeat(2, 60px);
-            gap: 8px;
-            margin-top: 0.5rem;
-        }
-
-        .control-btn {
-            border: none;
-            border-radius: 12px;
+        .modal-title { font-size: 2.5rem; margin-bottom: 0.5rem; color: #333; font-weight: 800; }
+        .modal-text { font-size: 1.2rem; color: #555; margin-bottom: 2rem; }
+        
+        .btn-primary {
+            background: linear-gradient(to bottom, #4CAF50, #45a049);
+            color: white;
             font-size: 1.5rem;
-            cursor: pointer;
             font-weight: bold;
-            box-shadow: 0 4px 0 rgba(0,0,0,0.2);
-            transition: transform 0.1s;
-            font-family: inherit;
-        }
-
-        .control-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 0 rgba(0,0,0,0.2);
-        }
-
-        .control-btn:active {
-            transform: translateY(2px);
-            box-shadow: 0 2px 0 rgba(0,0,0,0.2);
-        }
-
-        .control-btn:nth-child(1) {
-            grid-column: 2;
-            grid-row: 1;
-        }
-
-        .control-btn:nth-child(2) {
-            grid-column: 1;
-            grid-row: 2;
-        }
-
-        .control-btn:nth-child(3) {
-            grid-column: 3;
-            grid-row: 2;
-        }
-
-        .control-btn:nth-child(4) {
-            grid-column: 2;
-            grid-row: 2;
-        }
-
-        .start-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: rgba(0,0,0,0.8);
-            z-index: 1000;
-        }
-
-        .start-overlay.hidden {
-            display: none;
-        }
-
-        .start-box {
-            padding: 3rem;
-            border-radius: 30px;
-            text-align: center;
-            background: #FFFFFF;
-            box-shadow: 0 10px 50px rgba(0,0,0,0.5);
-            max-width: 500px;
-        }
-
-        .start-title {
-            font-size: 3rem;
-            font-weight: bold;
-            margin-bottom: 1rem;
-            color: #333333;
-        }
-
-        .start-message {
-            font-size: 1.5rem;
-            margin: 1.5rem 0;
-            color: #666666;
-            line-height: 1.6;
-        }
-
-        .start-btn {
-            font-size: 2rem;
-            padding: 1.2rem 3rem;
+            padding: 0.8rem 2.5rem;
             border: none;
-            border-radius: 30px;
+            border-radius: 50px;
             cursor: pointer;
-            font-weight: bold;
-            box-shadow: 0 6px 0 rgba(0,0,0,0.2);
+            box-shadow: 0 6px 0 #2E7D32;
             transition: transform 0.1s;
-            font-family: inherit;
-            background: #4CAF50;
-            color: #FFFFFF;
-            margin-top: 1rem;
         }
+        .btn-primary:active { transform: translateY(4px); box-shadow: 0 2px 0 #2E7D32; }
 
-        .start-btn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 9px 0 rgba(0,0,0,0.2);
-        }
+        @keyframes popIn { from { opacity: 0; transform: scale(0.8); } to { opacity: 1; transform: scale(1); } }
 
-        .start-btn:active {
-            transform: translateY(3px);
-            box-shadow: 0 3px 0 rgba(0,0,0,0.2);
-        }
-
-        @media (max-width: 768px) {
-            .question-text {
-                font-size: 1.8rem;
+        /* RESPONSIVE */
+        @media (max-width: 800px) {
+            .game-container { flex-direction: column-reverse; gap: 0.5rem; }
+            .sidebar { 
+                width: 100%; 
+                height: 120px; /* Short height for mobile legend */
+                flex-shrink: 0;
             }
-            .game-board {
-                max-width: 100%;
+            .sidebar-content {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 1rem;
+                justify-content: center;
             }
-            .control-buttons {
-                grid-template-columns: repeat(3, 60px);
-                grid-template-rows: repeat(2, 60px);
-            }
+            .mini-legend-item { border-bottom: none; border-right: 1px solid #eee; padding-right: 1rem; }
+            .score-float { font-size: 0.9rem; padding: 0.3rem 0.8rem; }
         }
     </style>
-  <style>@view-transition { navigation: auto; }</style>
-  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
-  <script src="https://cdn.tailwindcss.com" type="text/javascript"></script>
  </head>
  <body>
+
   <div id="app">
-   <div class="question-bar" id="questionBar">
-    <h1 class="question-text" id="questionText">Apakah fungsi telefon pintar?</h1>
+    
+   <!-- 1. Header & Controls -->
+   <div class="header-section" id="headerSection">
+       <div class="question-bar">
+           <h1 class="question-text" id="questionText">Apakah fungsi telefon pintar?</h1>
+       </div>
+       <div class="controls-bar">
+           <!-- Changed onclick to showMainMenu() -->
+           <button class="btn-small btn-restart" onclick="showMainMenu()">
+               <span>↻</span> Mula Semula
+           </button>
+           <button class="btn-small btn-fullscreen" onclick="toggleFullScreen()">
+               <span>⛶</span> Skrin Penuh
+           </button>
+       </div>
    </div>
+
+   <!-- 2. Main Layout -->
    <div class="game-container">
-    <div class="controls-hint" id="controlsHint">
-     🎮 Gunakan anak panah atau butang di bawah
-    </div>
-    <div style="display: flex; gap: 1rem; align-items: flex-start; justify-content: center;">
-     <div class="answer-guide" id="answerGuide">
-      <div style="margin-bottom: 0.5rem; font-weight: bold; font-size: 0.85rem; text-align: center;">
-       Jawapan perlu cari:
-      </div>
-      <div style="display: flex; flex-direction: column; gap: 0.3rem;"><span style="background: #9C27B0; padding: 0.25rem 0.5rem; border-radius: 8px; color: white; font-weight: bold; font-size: 0.7rem;">📚 Belajar</span> <span style="background: #9C27B0; padding: 0.25rem 0.5rem; border-radius: 8px; color: white; font-weight: bold; font-size: 0.7rem;">👕 Gosok baju</span> <span style="background: #9C27B0; padding: 0.25rem 0.5rem; border-radius: 8px; color: white; font-weight: bold; font-size: 0.7rem;">🔍 Cari maklumat</span> <span style="background: #9C27B0; padding: 0.25rem 0.5rem; border-radius: 8px; color: white; font-weight: bold; font-size: 0.7rem;">🍚 Makan nasi</span> <span style="background: #9C27B0; padding: 0.25rem 0.5rem; border-radius: 8px; color: white; font-weight: bold; font-size: 0.7rem;">📞 Jawab call</span> <span style="background: #9C27B0; padding: 0.25rem 0.5rem; border-radius: 8px; color: white; font-weight: bold; font-size: 0.7rem;">😴 Tidur</span> <span style="background: #9C27B0; padding: 0.25rem 0.5rem; border-radius: 8px; color: white; font-weight: bold; font-size: 0.7rem;">📷 Ambil foto</span> <span style="background: #9C27B0; padding: 0.25rem 0.5rem; border-radius: 8px; color: white; font-weight: bold; font-size: 0.7rem;">🎣 Mancing</span> <span style="background: #9C27B0; padding: 0.25rem 0.5rem; border-radius: 8px; color: white; font-weight: bold; font-size: 0.7rem;">⏰ Masa</span> <span style="background: #9C27B0; padding: 0.25rem 0.5rem; border-radius: 8px; color: white; font-weight: bold; font-size: 0.7rem;">🍳 Masak</span> <span style="background: #9C27B0; padding: 0.25rem 0.5rem; border-radius: 8px; color: white; font-weight: bold; font-size: 0.7rem;">🔐 Selamat</span> <span style="background: #9C27B0; padding: 0.25rem 0.5rem; border-radius: 8px; color: white; font-weight: bold; font-size: 0.7rem;">⚽ Bola</span> <span style="background: #9C27B0; padding: 0.25rem 0.5rem; border-radius: 8px; color: white; font-weight: bold; font-size: 0.7rem;">🎵 Hiburan</span> <span style="background: #9C27B0; padding: 0.25rem 0.5rem; border-radius: 8px; color: white; font-weight: bold; font-size: 0.7rem;">🚿 Mandi</span> <span style="background: #9C27B0; padding: 0.25rem 0.5rem; border-radius: 8px; color: white; font-weight: bold; font-size: 0.7rem;">🗺️ Pandu</span> <span style="background: #9C27B0; padding: 0.25rem 0.5rem; border-radius: 8px; color: white; font-weight: bold; font-size: 0.7rem;">🌿 Potong rumput</span> <span style="background: #9C27B0; padding: 0.25rem 0.5rem; border-radius: 8px; color: white; font-weight: bold; font-size: 0.7rem;">📖 Buku digital</span> <span style="background: #9C27B0; padding: 0.25rem 0.5rem; border-radius: 8px; color: white; font-weight: bold; font-size: 0.7rem;">🚗 Cuci kereta</span> <span style="background: #9C27B0; padding: 0.25rem 0.5rem; border-radius: 8px; color: white; font-weight: bold; font-size: 0.7rem;">📅 Kalendar</span> <span style="background: #9C27B0; padding: 0.25rem 0.5rem; border-radius: 8px; color: white; font-weight: bold; font-size: 0.7rem;">🧹 Sapu</span>
-      </div>
-     </div>
-     <div style="display: flex; flex-direction: column; align-items: center; gap: 0.5rem;">
-      <div class="game-board" id="gameBoard">
-       <div class="grid-container" id="gridContainer"></div>
-      </div>
-      <div class="score-panel" id="scorePanel">
-       Skor: 0 | Panjang: 3
-      </div>
-      <div class="control-buttons"><button class="control-btn" id="btnUp">⬆️</button> <button class="control-btn" id="btnLeft">⬅️</button> <button class="control-btn" id="btnRight">➡️</button> <button class="control-btn" id="btnDown">⬇️</button>
-      </div>
-     </div>
+       
+       <!-- Left Sidebar: Legend -->
+       <div class="sidebar">
+           <div class="sidebar-header">📝 Panduan Simbol</div>
+           <div class="sidebar-content" id="sidebarLegend">
+               <!-- Populated by JS -->
+           </div>
+       </div>
+
+       <!-- Center: Game Board -->
+       <div class="game-area" id="gameArea">
+           <div class="score-float" id="scorePanel">Skor: 0</div>
+           <div class="game-board" id="gameBoard">
+               <div class="grid-container" id="gridContainer"></div>
+           </div>
+       </div>
+
+   </div>
+
+   <!-- START OVERLAY -->
+   <div class="overlay active" id="startOverlay">
+       <div class="modal-box">
+           <h2 class="modal-title">🐛 Captain Pillar</h2>
+           <p class="modal-text">
+               Gunakan kekunci panah ⌨️ untuk bergerak.<br>
+               <strong>Misi:</strong> Cari jawapan yang betul di papan permainan!
+           </p>
+           <button class="btn-primary" onclick="startGameSession()">MULA ▶</button>
+       </div>
+   </div>
+
+   <!-- WIN OVERLAY -->
+   <div class="overlay" id="celebrationOverlay">
+    <div class="modal-box">
+     <div style="font-size: 4rem; margin-bottom: 0.5rem;">🎉🏆🎉</div>
+     <h2 class="modal-title">Tahniah!</h2>
+     <p class="modal-text" id="finalScoreWin">Semua jawapan ditemui!</p>
+     <button class="btn-primary" onclick="showMainMenu()">MAIN LAGI ↻</button>
     </div>
    </div>
-   <div class="celebration-overlay" id="celebrationOverlay">
-    <div class="celebration-box" id="celebrationBox">
-     <div class="celebration-title" id="celebrationTitle">
-      🎉 Tahniah! Betul! 🎉
-     </div>
-     <div class="stars">
-      ⭐⭐⭐
-     </div>
-     <p style="font-size: 1.8rem; margin: 0;" id="successMessage">Ular anda berjaya!</p><button class="play-again-btn" id="playAgainBtn">Main Lagi</button>
+
+   <!-- LOSE OVERLAY -->
+   <div class="overlay" id="wrongAnswerOverlay">
+    <div class="modal-box">
+     <div style="font-size: 4rem; margin-bottom: 0.5rem;">😢💥</div>
+     <h2 class="modal-title">Tamat</h2>
+     <p class="modal-text" id="finalScoreLose">Terlanggar!</p>
+     <button class="btn-primary" onclick="showMainMenu()">CUBA LAGI ↻</button>
     </div>
    </div>
-   <div class="wrong-answer-overlay" id="wrongAnswerOverlay">
-    <div class="wrong-answer-box">
-     <div class="wrong-answer-title">
-      ❌ Jawapan Salah! ❌
-     </div>
-     <div class="wrong-icon">
-      😢
-     </div>
-     <p style="font-size: 1.8rem; margin: 0; color: #FFF;">Cuba lagi!</p><button class="play-again-btn" id="tryAgainBtn" style="background: #FFF; color: #FF6B6B;">Cuba Lagi</button>
-    </div>
-   </div>
-   <div class="start-overlay" id="startOverlay">
-    <div class="start-box">
-     <div class="start-title">
-      🎮 Snake Belajar 🐍
-     </div>
-     <div class="start-message">
-      📚 Baca soalan dan jawapan dengan teliti!<br><br>
-       🐍 Kumpulkan semua jawapan BETUL untuk menang<br><br>
-       ⚠️ Elakkan jawapan SALAH atau ular akan mengecil!
-     </div><button class="start-btn" id="startBtn">🚀 MULA MAIN!</button>
-    </div>
-   </div>
+
   </div>
+
   <script>
-        const defaultConfig = {
-            background_color: '#87CEEB',
-            board_color: '#FFFFFF',
-            text_color: '#333333',
-            snake_color: '#4CAF50',
-            question_bar_color: '#FFD700',
-            font_family: 'Comic Sans MS',
-            font_size: 16,
-            question_text: 'Apakah fungsi telefon pintar?',
-            correct_answer: 'Belajar, Mencari maklumat, Jawab panggilan, Ambil gambar, Tengok masa',
-            success_message: 'Tahniah! Betul!'
+        // --- CONFIG & DATA ---
+        const config = {
+            gridCols: 25,
+            gridRows: 18,
+            speed: 200 // ms
         };
 
-        const GRID_WIDTH = 30;
-        const GRID_HEIGHT = 20;
-        const CELL_SIZE = 25;
-        
-        let snake = [{x: 7, y: 7}, {x: 6, y: 7}, {x: 5, y: 7}];
+        const correctAnswersData = [
+            { id: 'belajar', icon: '📚', label: 'Belajar' },
+            { id: 'info', icon: '🔍', label: 'Cari Info' },
+            { id: 'call', icon: '📞', label: 'Telefon' },
+            { id: 'foto', icon: '📷', label: 'Ambil Foto' },
+            { id: 'masa', icon: '⏰', label: 'Masa' },
+            { id: 'maps', icon: '🗺️', label: 'Peta' },
+            { id: 'buku', icon: '📖', label: 'E-Buku' },
+            { id: 'kalendar', icon: '📅', label: 'Kalendar' },
+            { id: 'hiburan', icon: '🎵', label: 'Muzik' },
+            { id: 'bank', icon: '🏦', label: 'Bank' }
+        ];
+
+        const wrongAnswersData = [
+            { icon: '👕', label: 'Gosok Baju' },
+            { icon: '🍚', label: 'Makan Nasi' },
+            { icon: '😴', label: 'Tidur' },
+            { icon: '🎣', label: 'Mancing' },
+            { icon: '🍳', label: 'Masak' },
+            { icon: '⚽', label: 'Bola' },
+            { icon: '🚿', label: 'Mandi' },
+            { icon: '🌿', label: 'Rumput' },
+            { icon: '🚗', label: 'Cuci Kereta' },
+            { icon: '🧹', label: 'Sapu' }
+        ];
+
+        // --- STATE ---
+        let snake = [];
         let direction = {x: 1, y: 0};
         let nextDirection = {x: 1, y: 0};
         let score = 0;
         let gameInterval;
         let isGameRunning = false;
+        let activeCorrectAnswers = [];
+        let activeWrongAnswers = [];
+        let collectedIds = new Set();
+        let cellSize = 20; // Will be dynamic
 
-        const wrongAnswers = [
-            {text: 'Menggosok baju', icon: '👕'},
-            {text: 'Makan nasi', icon: '🍚'},
-            {text: 'Tidur', icon: '😴'},
-            {text: 'Memancing', icon: '🎣'},
-            {text: 'Memasak', icon: '🍳'},
-            {text: 'Bermain bola', icon: '⚽'},
-            {text: 'Mandi', icon: '🚿'},
-            {text: 'Memotong rumput', icon: '🌿'},
-            {text: 'Mencuci kereta', icon: '🚗'},
-            {text: 'Menyapu lantai', icon: '🧹'}
-        ];
+        // --- AUDIO ---
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        function playSound(type) {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            const now = audioCtx.currentTime;
+            osc.connect(gain); gain.connect(audioCtx.destination);
 
-        let correctAnswerPositions = [];
-        let wrongAnswerPositions = [];
-        let collectedCorrectAnswers = new Set();
-        let collectedWrongAnswers = new Set();
+            if (type === 'eat') {
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(600, now);
+                osc.frequency.exponentialRampToValueAtTime(1200, now + 0.1);
+                gain.gain.setValueAtTime(0.3, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
+                osc.start(now); osc.stop(now + 0.1);
+            } else if (type === 'wrong') {
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(150, now);
+                osc.frequency.linearRampToValueAtTime(50, now + 0.3);
+                gain.gain.setValueAtTime(0.3, now);
+                gain.gain.linearRampToValueAtTime(0.01, now + 0.3);
+                osc.start(now); osc.stop(now + 0.3);
+            } else if (type === 'win') {
+                [440, 554, 659].forEach((f, i) => {
+                    const o = audioCtx.createOscillator(); const g = audioCtx.createGain();
+                    o.connect(g); g.connect(audioCtx.destination);
+                    o.type='square'; o.frequency.value=f;
+                    g.gain.setValueAtTime(0.1, now); g.gain.exponentialRampToValueAtTime(0.01, now+0.4);
+                    o.start(now); o.stop(now+0.4);
+                });
+            }
+        }
 
-        function createGrid() {
+        // --- RESIZING LOGIC (Fit Screen) ---
+        function resizeBoard() {
+            const gameArea = document.getElementById('gameArea');
+            const containerW = gameArea.clientWidth;
+            const containerH = gameArea.clientHeight;
+
+            // Calculate max cell size that fits in container
+            // Allow small margin
+            const maxW = (containerW - 20) / config.gridCols;
+            const maxH = (containerH - 20) / config.gridRows;
+            
+            cellSize = Math.floor(Math.min(maxW, maxH));
+            
+            // Apply size
+            const gridContainer = document.getElementById('gridContainer');
+            gridContainer.style.gridTemplateColumns = `repeat(${config.gridCols}, ${cellSize}px)`;
+            gridContainer.style.width = `${config.gridCols * cellSize}px`;
+            
+            // Adjust cell heights
+            const cells = document.querySelectorAll('.grid-cell');
+            cells.forEach(c => {
+                c.style.width = `${cellSize}px`;
+                c.style.height = `${cellSize}px`;
+                c.style.fontSize = `${cellSize * 0.7}px`; // Scale icons
+            });
+        }
+
+        window.addEventListener('resize', resizeBoard);
+
+        // --- INIT & POPULATE ---
+        function initGrid() {
             const container = document.getElementById('gridContainer');
             container.innerHTML = '';
-            container.style.gridTemplateColumns = `repeat(${GRID_WIDTH}, 1fr)`;
-            container.style.gridTemplateRows = `repeat(${GRID_HEIGHT}, 1fr)`;
-            container.style.width = `${GRID_WIDTH * CELL_SIZE}px`;
-            container.style.height = `${GRID_HEIGHT * CELL_SIZE}px`;
-            
-            for (let i = 0; i < GRID_WIDTH * GRID_HEIGHT; i++) {
+            for (let i = 0; i < config.gridCols * config.gridRows; i++) {
                 const cell = document.createElement('div');
                 cell.className = 'grid-cell';
-                cell.style.width = `${CELL_SIZE}px`;
-                cell.style.height = `${CELL_SIZE}px`;
                 container.appendChild(cell);
             }
+            // Trigger resize after creating cells
+            setTimeout(resizeBoard, 50);
         }
 
-        function placeAnswers() {
-            // Place 10 correct answers with different icons
-            correctAnswerPositions = [
-                {x: 15, y: 3, icon: '📚', label: 'Belajar'},
-                {x: 5, y: 8, icon: '🔍', label: 'Mencari maklumat'},
-                {x: 22, y: 12, icon: '📞', label: 'Jawab panggilan'},
-                {x: 28, y: 16, icon: '📷', label: 'Ambil gambar'},
-                {x: 7, y: 17, icon: '⏰', label: 'Tengok masa'},
-                {x: 18, y: 3, icon: '🔐', label: 'Keselamatan'},
-                {x: 25, y: 7, icon: '🎵', label: 'Hiburan terkawal'},
-                {x: 9, y: 15, icon: '🗺️', label: 'Pandu arah'},
-                {x: 20, y: 5, icon: '📖', label: 'Buku digital'},
-                {x: 12, y: 10, icon: '📅', label: 'Kalendar'}
-            ];
+        function populateSidebar() {
+            const sidebar = document.getElementById('sidebarLegend');
+            sidebar.innerHTML = '';
             
-            // Place 10 wrong answers (different icons)
-            wrongAnswerPositions = [
-                {x: 3, y: 5, icon: '👕'},
-                {x: 10, y: 6, icon: '🍚'},
-                {x: 27, y: 9, icon: '😴'},
-                {x: 6, y: 14, icon: '🎣'},
-                {x: 24, y: 18, icon: '🍳'},
-                {x: 1, y: 10, icon: '⚽'},
-                {x: 16, y: 2, icon: '🚿'},
-                {x: 28, y: 13, icon: '🌿'},
-                {x: 14, y: 19, icon: '🚗'},
-                {x: 21, y: 4, icon: '🧹'}
-            ];
-        }
+            const allItems = [...correctAnswersData, ...wrongAnswersData];
+            allItems.sort((a, b) => a.label.localeCompare(b.label));
 
-        function drawSnake() {
-            const cells = document.querySelectorAll('.grid-cell');
-            cells.forEach(cell => {
-                cell.classList.remove('snake-segment', 'snake-head', 'answer-cell', 'correct-answer-cell');
-                cell.style.backgroundColor = '';
-                cell.innerHTML = '';
-            });
-            
-            // Draw correct answers that haven't been collected
-            correctAnswerPositions.forEach((pos, index) => {
-                if (!collectedCorrectAnswers.has(index)) {
-                    const cellIndex = pos.y * GRID_WIDTH + pos.x;
-                    const cell = cells[cellIndex];
-                    if (cell) {
-                        cell.classList.add('correct-answer-cell');
-                        cell.style.backgroundColor = '#4CAF50';
-                        cell.style.border = '2px solid #2E7D32';
-                        cell.innerHTML = `<span style="font-size: 1.2rem;">${pos.icon}</span>`;
-                    }
-                }
-            });
-            
-            // Draw wrong answers that haven't been collected
-            const wrongColors = ['#FF6B6B', '#4ECDC4', '#A8E6CF', '#FFD93D', '#FF9FF3', '#FFA07A', '#DDA0DD', '#F0E68C', '#87CEFA', '#FFB6C1'];
-            wrongAnswerPositions.forEach((pos, index) => {
-                if (!collectedWrongAnswers.has(index)) {
-                    const cellIndex = pos.y * GRID_WIDTH + pos.x;
-                    const cell = cells[cellIndex];
-                    if (cell) {
-                        cell.classList.add('answer-cell');
-                        cell.style.backgroundColor = wrongColors[index];
-                        cell.style.border = '2px solid rgba(0,0,0,0.3)';
-                        cell.innerHTML = `<span style="font-size: 1.2rem;">${pos.icon}</span>`;
-                    }
-                }
-            });
-            
-            // Draw snake
-            snake.forEach((segment, index) => {
-                const cellIndex = segment.y * GRID_WIDTH + segment.x;
-                const cell = cells[cellIndex];
-                if (cell) {
-                    cell.classList.add('snake-segment');
-                    if (index === 0) {
-                        cell.classList.add('snake-head');
-                    }
-                }
+            allItems.forEach(item => {
+                sidebar.innerHTML += `
+                    <div class="mini-legend-item">
+                        <span class="mini-legend-icon">${item.icon}</span>
+                        <span>${item.label}</span>
+                    </div>
+                `;
             });
         }
 
-        function moveSnake() {
-            if (!isGameRunning) return;
-            
-            direction = nextDirection;
-            
-            const head = {...snake[0]};
-            head.x += direction.x;
-            head.y += direction.y;
-            
-            // Wrap around walls (teleport to opposite side)
-            if (head.x < 0) head.x = GRID_WIDTH - 1;
-            if (head.x >= GRID_WIDTH) head.x = 0;
-            if (head.y < 0) head.y = GRID_HEIGHT - 1;
-            if (head.y >= GRID_HEIGHT) head.y = 0;
-            
-            // Check collision with self
-            if (snake.some(segment => segment.x === head.x && segment.y === head.y)) {
-                gameOver(false);
-                return;
-            }
-            
-            snake.unshift(head);
-            
-            // Check if snake hit any correct answer
-            let hitCorrectAnswer = false;
-            correctAnswerPositions.forEach((pos, index) => {
-                if (!collectedCorrectAnswers.has(index) && head.x === pos.x && head.y === pos.y) {
-                    hitCorrectAnswer = true;
-                    collectedCorrectAnswers.add(index);
-                    score += 10;
-                    
-                    // Flash blue for correct answer
-                    const gameBoard = document.getElementById('gameBoard');
-                    gameBoard.classList.add('flash-correct');
-                    setTimeout(() => gameBoard.classList.remove('flash-correct'), 500);
-                    
-                    // Check if all correct answers have been collected
-                    if (collectedCorrectAnswers.size === correctAnswerPositions.length) {
-                        drawSnake();
-                        updateScore();
-                        gameOver(true);
-                        return;
-                    }
-                }
-            });
-
-            if (hitCorrectAnswer) {
-                // Don't remove tail - snake grows by 1
-                drawSnake();
-                updateScore();
-                return;
-            }
-
-            // Check if snake hit any wrong answer
-            let hitWrongAnswer = false;
-            wrongAnswerPositions.forEach((pos, index) => {
-                if (!collectedWrongAnswers.has(index) && head.x === pos.x && head.y === pos.y) {
-                    hitWrongAnswer = true;
-                    collectedWrongAnswers.add(index);
-                    
-                    // Flash red for wrong answer
-                    const gameBoard = document.getElementById('gameBoard');
-                    gameBoard.classList.add('flash-wrong');
-                    setTimeout(() => gameBoard.classList.remove('flash-wrong'), 500);
-                }
-            });
-            
-            // Remove tail (normal move)
-            snake.pop();
-            
-            // If hit wrong answer, remove one more segment as penalty
-            if (hitWrongAnswer && snake.length > 0) {
-                snake.pop();
-                score = Math.max(0, score - 5); // Also reduce score
-            }
-            
-            // Check if snake is completely gone
-            if (snake.length === 0) {
-                gameOver(false);
-                return;
-            }
-            
-            drawSnake();
-            updateScore();
-        }
-
-        function changeDirection(newDirection) {
-            // Prevent reversing
-            if (newDirection.x === -direction.x && newDirection.y === -direction.y) return;
-            nextDirection = newDirection;
-        }
-
-        function updateScore() {
-            document.getElementById('scorePanel').textContent = `Skor: ${score} | Panjang: ${snake.length}`;
-        }
-
-        function gameOver(success) {
+        // --- GAME CONTROL ---
+        function showMainMenu() {
+            // Stop the game loop
             isGameRunning = false;
             clearInterval(gameInterval);
             
-            if (success) {
-                document.getElementById('successMessage').textContent = `Markah Akhir: ${snake.length} pixel!`;
+            // Show main menu overlay
+            document.querySelectorAll('.overlay').forEach(el => el.classList.remove('active'));
+            document.getElementById('startOverlay').classList.add('active');
+        }
+
+        function startGameSession() {
+            document.getElementById('startOverlay').classList.remove('active');
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            resetGame();
+        }
+
+        function resetGame() {
+            document.querySelectorAll('.overlay').forEach(el => {
+                if(el.id !== 'startOverlay') el.classList.remove('active');
+            });
+
+            snake = [{x: 5, y: 5}, {x: 4, y: 5}, {x: 3, y: 5}];
+            direction = {x: 1, y: 0};
+            nextDirection = {x: 1, y: 0};
+            score = 0;
+            collectedIds.clear();
+            isGameRunning = true;
+
+            generateItems();
+            updateScoreDisplay();
+            resizeBoard(); // Ensure fit
+            renderBoard(); // Draw initial state
+            
+            if (gameInterval) clearInterval(gameInterval);
+            gameInterval = setInterval(gameLoop, config.speed);
+        }
+
+        function toggleFullScreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(err => {
+                    console.log(`Error attempting to enable full-screen mode: ${err.message}`);
+                });
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                }
+            }
+        }
+
+        // --- GAME LOGIC ---
+        function generateItems() {
+            activeCorrectAnswers = [];
+            activeWrongAnswers = [];
+            const usedPositions = new Set();
+            snake.forEach(s => usedPositions.add(`${s.x},${s.y}`));
+
+            const getRandomPos = () => {
+                let x, y, key;
+                do {
+                    x = Math.floor(Math.random() * config.gridCols);
+                    y = Math.floor(Math.random() * config.gridRows);
+                    key = `${x},${y}`;
+                } while (usedPositions.has(key));
+                usedPositions.add(key);
+                return {x, y};
+            };
+
+            correctAnswersData.forEach(item => {
+                const pos = getRandomPos();
+                activeCorrectAnswers.push({ ...pos, data: item });
+            });
+
+            wrongAnswersData.forEach(item => {
+                const pos = getRandomPos();
+                activeWrongAnswers.push({ ...pos, icon: item.icon });
+            });
+        }
+
+        function renderBoard() {
+            const cells = document.querySelectorAll('.grid-cell');
+            
+            // Faster clear (text content only)
+            cells.forEach(cell => {
+                cell.textContent = '';
+                cell.className = 'grid-cell';
+                cell.style.opacity = '1';
+                // Re-apply size in case of resize glitch, though resizing handles it
+                cell.style.width = `${cellSize}px`;
+                cell.style.height = `${cellSize}px`;
+                cell.style.fontSize = `${cellSize * 0.7}px`;
+            });
+
+            activeCorrectAnswers.forEach(item => {
+                if (collectedIds.has(item.data.id)) return;
+                const idx = item.y * config.gridCols + item.x;
+                if (cells[idx]) cells[idx].textContent = item.data.icon;
+            });
+
+            activeWrongAnswers.forEach(item => {
+                const idx = item.y * config.gridCols + item.x;
+                if (cells[idx]) {
+                    cells[idx].textContent = item.icon;
+                    cells[idx].style.opacity = '0.6';
+                }
+            });
+
+            snake.forEach((seg, i) => {
+                const idx = seg.y * config.gridCols + seg.x;
+                if (cells[idx]) {
+                    cells[idx].classList.add(i === 0 ? 'snake-head' : 'snake-segment');
+                    cells[idx].textContent = ''; 
+                }
+            });
+        }
+
+        function gameLoop() {
+            if (!isGameRunning) return;
+
+            direction = nextDirection;
+            const head = { x: snake[0].x + direction.x, y: snake[0].y + direction.y };
+
+            // Wrap Walls
+            if (head.x < 0) head.x = config.gridCols - 1;
+            if (head.x >= config.gridCols) head.x = 0;
+            if (head.y < 0) head.y = config.gridRows - 1;
+            if (head.y >= config.gridRows) head.y = 0;
+
+            // Self Collision
+            if (snake.some(s => s.x === head.x && s.y === head.y)) {
+                gameOver(false);
+                return;
+            }
+
+            snake.unshift(head);
+            let ateFood = false;
+
+            // Check Correct Answer
+            const correctIdx = activeCorrectAnswers.findIndex(
+                item => !collectedIds.has(item.data.id) && item.x === head.x && item.y === head.y
+            );
+
+            if (correctIdx !== -1) {
+                collectedIds.add(activeCorrectAnswers[correctIdx].data.id);
+                score += 10;
+                playSound('eat');
+                document.getElementById('gameBoard').classList.add('flash-correct');
+                setTimeout(() => document.getElementById('gameBoard').classList.remove('flash-correct'), 300);
+                ateFood = true;
+
+                if (collectedIds.size === correctAnswersData.length) {
+                    gameOver(true);
+                    return;
+                }
+            }
+
+            // Check Wrong Answer
+            const wrongIdx = activeWrongAnswers.findIndex(
+                item => item.x === head.x && item.y === head.y
+            );
+
+            if (wrongIdx !== -1) {
+                score = Math.max(0, score - 5);
+                playSound('wrong');
+                document.getElementById('gameBoard').classList.add('flash-wrong');
+                setTimeout(() => document.getElementById('gameBoard').classList.remove('flash-wrong'), 300);
+                activeWrongAnswers.splice(wrongIdx, 1);
+                
+                if (snake.length > 2) snake.pop();
+            }
+
+            if (!ateFood) snake.pop();
+
+            updateScoreDisplay();
+            renderBoard();
+        }
+
+        function updateScoreDisplay() {
+            document.getElementById('scorePanel').innerText = `Skor: ${score}`;
+        }
+
+        function gameOver(win) {
+            isGameRunning = false;
+            clearInterval(gameInterval);
+            playSound(win ? 'win' : 'wrong');
+            
+            if (win) {
+                document.getElementById('finalScoreWin').innerText = `Markah Akhir: ${score}`;
                 document.getElementById('celebrationOverlay').classList.add('active');
             } else {
-                document.querySelector('.wrong-answer-box p').textContent = `Markah Akhir: ${snake.length} pixel. Cuba lagi!`;
+                document.getElementById('finalScoreLose').innerText = `Markah Akhir: ${score}`;
                 document.getElementById('wrongAnswerOverlay').classList.add('active');
             }
         }
 
-        function resetGame() {
-            snake = [{x: 7, y: 7}, {x: 6, y: 7}, {x: 5, y: 7}];
-            direction = {x: 1, y: 0};
-            nextDirection = {x: 1, y: 0};
-            score = 0;
-            collectedCorrectAnswers.clear();
-            collectedWrongAnswers.clear();
-            placeAnswers();
-            drawSnake();
-            updateScore();
-            startGame();
-        }
-
-        function startGame() {
-            isGameRunning = true;
-            document.getElementById('startOverlay').classList.add('hidden');
-            gameInterval = setInterval(moveSnake, 300);
-        }
-
-        // Start button
-        document.getElementById('startBtn').addEventListener('click', () => {
-            startGame();
-        });
-
-        // Keyboard controls
-        document.addEventListener('keydown', (e) => {
+        document.addEventListener('keydown', e => {
             if (!isGameRunning) return;
-            
             switch(e.key) {
-                case 'ArrowUp':
-                    e.preventDefault();
-                    changeDirection({x: 0, y: -1});
-                    break;
-                case 'ArrowDown':
-                    e.preventDefault();
-                    changeDirection({x: 0, y: 1});
-                    break;
-                case 'ArrowLeft':
-                    e.preventDefault();
-                    changeDirection({x: -1, y: 0});
-                    break;
-                case 'ArrowRight':
-                    e.preventDefault();
-                    changeDirection({x: 1, y: 0});
-                    break;
+                case 'ArrowUp': if (direction.y === 0) nextDirection = {x: 0, y: -1}; break;
+                case 'ArrowDown': if (direction.y === 0) nextDirection = {x: 0, y: 1}; break;
+                case 'ArrowLeft': if (direction.x === 0) nextDirection = {x: -1, y: 0}; break;
+                case 'ArrowRight': if (direction.x === 0) nextDirection = {x: 1, y: 0}; break;
             }
         });
 
-        // Button controls
-        document.getElementById('btnUp').addEventListener('click', () => {
-            if (isGameRunning) changeDirection({x: 0, y: -1});
-        });
-        document.getElementById('btnDown').addEventListener('click', () => {
-            if (isGameRunning) changeDirection({x: 0, y: 1});
-        });
-        document.getElementById('btnLeft').addEventListener('click', () => {
-            if (isGameRunning) changeDirection({x: -1, y: 0});
-        });
-        document.getElementById('btnRight').addEventListener('click', () => {
-            if (isGameRunning) changeDirection({x: 1, y: 0});
-        });
-
-        document.getElementById('playAgainBtn').addEventListener('click', () => {
-            document.getElementById('celebrationOverlay').classList.remove('active');
-            resetGame();
-        });
-
-        document.getElementById('tryAgainBtn').addEventListener('click', () => {
-            document.getElementById('wrongAnswerOverlay').classList.remove('active');
-            resetGame();
-        });
-
-        async function onConfigChange(config) {
-            const customFont = config.font_family || defaultConfig.font_family;
-            const baseFontStack = 'Arial, sans-serif';
-            const baseSize = config.font_size || defaultConfig.font_size;
-            const backgroundColor = config.background_color || defaultConfig.background_color;
-            const boardColor = config.board_color || defaultConfig.board_color;
-            const textColor = config.text_color || defaultConfig.text_color;
-            const snakeColor = config.snake_color || defaultConfig.snake_color;
-            const questionBarColor = config.question_bar_color || defaultConfig.question_bar_color;
-
-            document.body.style.fontFamily = `${customFont}, ${baseFontStack}`;
-            document.body.style.fontSize = `${baseSize}px`;
-
-            document.getElementById('app').style.backgroundColor = backgroundColor;
-            
-            document.querySelector('.question-bar').style.backgroundColor = questionBarColor;
-            document.getElementById('questionText').textContent = config.question_text || defaultConfig.question_text;
-            document.getElementById('questionText').style.fontSize = `${baseSize * 1.5625}px`;
-            document.getElementById('questionText').style.color = textColor;
-
-            document.querySelector('.game-board').style.backgroundColor = boardColor;
-            
-            document.querySelectorAll('.grid-cell').forEach(cell => {
-                cell.style.backgroundColor = '#F0F0F0';
-            });
-
-            const styleTag = document.getElementById('dynamicSnakeStyle') || document.createElement('style');
-            styleTag.id = 'dynamicSnakeStyle';
-            styleTag.textContent = `
-                .snake-segment {
-                    background: linear-gradient(135deg, ${snakeColor}, ${snakeColor}CC) !important;
-                    border-color: ${snakeColor}DD !important;
-                }
-                .snake-head {
-                    background: linear-gradient(135deg, ${snakeColor}EE, ${snakeColor}) !important;
-                }
-            `;
-            if (!document.getElementById('dynamicSnakeStyle')) {
-                document.head.appendChild(styleTag);
-            }
-
-            document.querySelector('.controls-hint').style.backgroundColor = '#FFFFFF';
-            document.querySelector('.controls-hint').style.color = textColor;
-            document.querySelector('.controls-hint').style.fontSize = `${baseSize * 0.8125}px`;
-
-            document.querySelector('.answer-guide').style.backgroundColor = '#FFFFFF';
-            document.querySelector('.answer-guide').style.color = textColor;
-
-            document.querySelector('.score-panel').style.backgroundColor = '#FFFFFF';
-            document.querySelector('.score-panel').style.color = textColor;
-            document.querySelector('.score-panel').style.fontSize = `${baseSize * 0.9375}px`;
-
-            document.querySelectorAll('.control-btn').forEach(btn => {
-                btn.style.backgroundColor = questionBarColor;
-                btn.style.color = textColor;
-            });
-
-            document.querySelector('.celebration-box').style.backgroundColor = '#FFFFFF';
-            document.getElementById('celebrationTitle').textContent = config.success_message || defaultConfig.success_message;
-            document.getElementById('celebrationTitle').style.fontSize = `${baseSize * 2.1875}px`;
-            document.getElementById('celebrationTitle').style.color = textColor;
-
-            document.getElementById('successMessage').style.color = textColor;
-            document.getElementById('successMessage').style.fontSize = `${baseSize * 1.125}px`;
-
-            document.querySelector('.play-again-btn').style.backgroundColor = snakeColor;
-            document.querySelector('.play-again-btn').style.color = '#FFFFFF';
-            document.querySelector('.play-again-btn').style.fontSize = `${baseSize * 1.125}px`;
-
-
-        }
-
-        if (window.elementSdk) {
-            window.elementSdk.init({
-                defaultConfig,
-                onConfigChange,
-                mapToCapabilities: (config) => ({
-                    recolorables: [
-                        {
-                            get: () => config.background_color || defaultConfig.background_color,
-                            set: (value) => {
-                                config.background_color = value;
-                                window.elementSdk.setConfig({ background_color: value });
-                            }
-                        },
-                        {
-                            get: () => config.board_color || defaultConfig.board_color,
-                            set: (value) => {
-                                config.board_color = value;
-                                window.elementSdk.setConfig({ board_color: value });
-                            }
-                        },
-                        {
-                            get: () => config.text_color || defaultConfig.text_color,
-                            set: (value) => {
-                                config.text_color = value;
-                                window.elementSdk.setConfig({ text_color: value });
-                            }
-                        },
-                        {
-                            get: () => config.snake_color || defaultConfig.snake_color,
-                            set: (value) => {
-                                config.snake_color = value;
-                                window.elementSdk.setConfig({ snake_color: value });
-                            }
-                        },
-                        {
-                            get: () => config.question_bar_color || defaultConfig.question_bar_color,
-                            set: (value) => {
-                                config.question_bar_color = value;
-                                window.elementSdk.setConfig({ question_bar_color: value });
-                            }
-                        }
-                    ],
-                    borderables: [],
-                    fontEditable: {
-                        get: () => config.font_family || defaultConfig.font_family,
-                        set: (value) => {
-                            config.font_family = value;
-                            window.elementSdk.setConfig({ font_family: value });
-                        }
-                    },
-                    fontSizeable: {
-                        get: () => config.font_size || defaultConfig.font_size,
-                        set: (value) => {
-                            config.font_size = value;
-                            window.elementSdk.setConfig({ font_size: value });
-                        }
-                    }
-                }),
-                mapToEditPanelValues: (config) => new Map([
-                    ['question_text', config.question_text || defaultConfig.question_text],
-                    ['correct_answer', config.correct_answer || defaultConfig.correct_answer],
-                    ['success_message', config.success_message || defaultConfig.success_message]
-                ])
-            });
-        }
-
-        // Initialize game
-        createGrid();
-        placeAnswers();
-        drawSnake();
-        updateScore();
-        onConfigChange(defaultConfig);
-        // Don't start automatically - wait for user to click start button
+        // Start
+        initGrid();
+        populateSidebar();
     </script>
- <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9aca51adb27c97fa',t:'MTc2NTUxMjA3MS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+ </body>
 </html>
