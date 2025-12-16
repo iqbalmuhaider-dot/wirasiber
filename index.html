@@ -28,13 +28,47 @@
             position: relative;
         }
 
+        /* --- SCHOOL HEADER --- */
+        .school-header {
+            text-align: center;
+            margin-bottom: 0.5rem;
+            color: #1565C0;
+            text-shadow: 1px 1px 0 rgba(255,255,255,0.5);
+            animation: fadeIn 1s ease;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .school-name {
+            font-size: clamp(1rem, 3vw, 1.5rem);
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .school-logo-img {
+            height: 60px; /* Saiz logo */
+            width: auto;
+            filter: drop-shadow(2px 2px 2px rgba(0,0,0,0.1));
+            transition: transform 0.3s ease;
+        }
+        
+        .school-logo-img:hover {
+            transform: scale(1.1);
+        }
+
         /* --- HEADER SECTION --- */
         .header-section {
             flex-shrink: 0;
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 0.5rem;
+            gap: 0.3rem;
             margin-bottom: 0.5rem;
             z-index: 10;
         }
@@ -50,7 +84,7 @@
         }
 
         .question-text {
-            font-size: clamp(1rem, 3.5vw, 1.6rem); /* Responsive text size */
+            font-size: clamp(1rem, 3.5vw, 1.6rem);
             font-weight: bold;
             margin: 0;
             color: #333;
@@ -87,6 +121,7 @@
         .btn-small:active { transform: translateY(0); }
 
         .btn-restart { color: #d32f2f; border-color: #ffcdd2; background: #ffebee; }
+        .btn-pause { color: #f57c00; border-color: #ffe0b2; background: #fff3e0; }
         .btn-fullscreen { color: #1976d2; border-color: #bbdefb; background: #e3f2fd; }
         
         select.btn-small {
@@ -123,6 +158,7 @@
             height: 95%; 
             border: 2px solid #fff;
             flex-shrink: 0;
+            transition: all 0.3s ease;
         }
 
         .sidebar-header {
@@ -148,10 +184,21 @@
             padding: 0.4rem;
             border-bottom: 1px solid #eee;
             font-size: 0.85rem;
+            animation: slideIn 0.3s ease;
         }
         
         .mini-legend-item:last-child { border-bottom: none; }
         .mini-legend-icon { font-size: 1.2rem; min-width: 25px; text-align: center; }
+
+        .legend-section-title {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            color: #666;
+            margin: 0.5rem 0 0.2rem 0;
+            padding-bottom: 0.2rem;
+            border-bottom: 2px solid #ddd;
+            font-weight: bold;
+        }
 
         /* CENTER GAME AREA */
         .game-area {
@@ -171,7 +218,7 @@
             border-radius: 12px;
             box-shadow: 0 8px 30px rgba(0,0,0,0.2);
             position: relative;
-            touch-action: none; /* Critical for swipe */
+            touch-action: none;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -183,10 +230,7 @@
         @keyframes flashBlue { 0%, 100% { border-color: #fff; } 50% { border-color: #2196F3; } }
         @keyframes flashRed { 0%, 100% { border-color: #fff; } 50% { border-color: #F44336; } }
 
-        .grid-container { 
-            display: grid; 
-            /* rows/cols set by JS */
-        }
+        .grid-container { display: grid; }
 
         .grid-cell {
             background-color: #F8F9FA;
@@ -195,7 +239,7 @@
             align-items: center;
             justify-content: center;
             line-height: 1;
-            box-sizing: border-box; /* Ensure border is inside size */
+            box-sizing: border-box;
         }
 
         /* Snake Styles */
@@ -211,7 +255,7 @@
             background: #388E3C !important;
             z-index: 3;
             border-radius: 50%;
-            transform: scale(1.15); /* Slightly bigger head */
+            transform: scale(1.15);
             position: relative;
             display: flex !important;
             align-items: center;
@@ -240,7 +284,7 @@
         
         .eye {
             width: 32%;
-            padding-bottom: 32%; /* Aspect ratio square */
+            padding-bottom: 32%;
             background: white;
             border-radius: 50%;
             position: relative;
@@ -260,7 +304,7 @@
             width: 45%;
             height: 20%;
             border-bottom: 0.15em solid white;
-            border-radius: 0 0 50% 50%; /* Smile curve */
+            border-radius: 0 0 50% 50%;
             margin-top: -5%;
         }
 
@@ -269,7 +313,7 @@
             top: 55%;
             width: 22%;
             height: 15%;
-            background: #FF8A80; /* Pink cheeks */
+            background: #FF8A80;
             border-radius: 50%;
             opacity: 0.6;
         }
@@ -280,19 +324,23 @@
             position: absolute;
             top: 0px;
             right: 0px;
-            background: rgba(255,255,255,0.9);
-            padding: 0.4rem 0.8rem;
+            background: rgba(255,255,255,0.95);
+            padding: 0.5rem 1rem;
             border-radius: 0 0 0 15px;
-            font-weight: bold;
-            box-shadow: -2px 2px 5px rgba(0,0,0,0.1);
-            font-size: 1rem;
+            font-weight: 800;
+            box-shadow: -2px 2px 8px rgba(0,0,0,0.15);
+            font-size: 1.1rem;
+            color: #2E7D32;
             z-index: 5;
             pointer-events: none;
+            border: 2px solid #4CAF50;
+            border-top: none;
+            border-right: none;
         }
 
         /* --- MOBILE D-PAD --- */
         .mobile-controls {
-            display: none; /* Hidden on desktop */
+            display: none;
             grid-template-columns: 60px 60px 60px;
             grid-template-rows: 50px 50px;
             gap: 10px;
@@ -367,21 +415,25 @@
         }
         .btn-primary:active { transform: translateY(4px); box-shadow: 0 2px 0 #2E7D32; }
 
+        /* --- PAUSE OVERLAY --- */
+        #pauseOverlay .modal-box {
+            background: #FFF3E0;
+            border: 4px solid #FFB74D;
+        }
+
         /* --- RESPONSIVE ADJUSTMENTS --- */
         @media (max-width: 800px) {
-            /* Mobile Layout: Column Reverse to put legend at bottom */
             .game-container { 
                 flex-direction: column; 
                 gap: 0.5rem; 
                 justify-content: space-between;
             }
             
-            /* Sidebar becomes a small horizontal/vertical legend at bottom */
             .sidebar { 
                 width: 100%; 
                 height: auto; 
                 max-height: 120px;
-                order: 3; /* Sidebar at the bottom */
+                order: 3;
                 border: none;
                 background: rgba(255,255,255,0.6);
             }
@@ -400,32 +452,45 @@
                 padding: 0.2rem 0.5rem; 
                 font-size: 0.75rem;
             }
+            .legend-section-title { display: none; } /* Hide headers on mobile to save space */
             
             .game-area {
-                order: 2; /* Game board in middle */
+                order: 2;
                 justify-content: flex-start;
                 flex: 1;
-                /* Ensure space for d-pad */
             }
 
             .mobile-controls {
-                display: grid; /* Show D-Pad on mobile */
+                display: grid;
             }
 
-            /* Adjust Modal for Phone */
             .modal-title { font-size: 1.6rem; }
             .modal-text { font-size: 0.95rem; }
             .btn-primary { font-size: 1.1rem; padding: 0.6rem 1.8rem; }
+            
+            .school-header { margin-bottom: 0.2rem; }
+            .school-logo-img { height: 40px; }
+            .school-name { font-size: 1rem; gap: 0.5rem; }
         }
 
         @keyframes popIn { from { opacity: 0; transform: scale(0.8); } to { opacity: 1; transform: scale(1); } }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes slideIn { from { opacity: 0; transform: translateX(-10px); } to { opacity: 1; transform: translateX(0); } }
     </style>
  </head>
  <body>
 
   <div id="app">
     
-   <!-- 1. Header & Controls -->
+   <!-- 1. School Header -->
+   <div class="school-header">
+       <div class="school-name">
+           <img src="https://i.postimg.cc/k4N1mPR1/semat-04.png" alt="Logo SKMT" class="school-logo-img">
+           Laman Interaktif SK MASJID TANAH (INTEGRASI)
+       </div>
+   </div>
+
+   <!-- 2. Header & Controls -->
    <div class="header-section" id="headerSection">
        <div class="question-bar">
            <h1 class="question-text" id="questionText">Jenis-Jenis Peranti Digital?</h1>
@@ -440,6 +505,9 @@
            </select>
 
            <!-- Controls -->
+           <button class="btn-small btn-pause" onclick="togglePause()">
+               <span id="pauseBtnIcon">⏸️</span> Jeda
+           </button>
            <button class="btn-small btn-restart" onclick="showMainMenu()">
                <span>↻</span> Mula Semula
            </button>
@@ -449,12 +517,12 @@
        </div>
    </div>
 
-   <!-- 2. Main Layout -->
+   <!-- 3. Main Layout -->
    <div class="game-container">
        
        <!-- Left Sidebar: Legend -->
        <div class="sidebar">
-           <div class="sidebar-header">📝 Panduan Simbol</div>
+           <div class="sidebar-header">📝 Senarai Simbol</div>
            <div class="sidebar-content" id="sidebarLegend">
                <!-- Populated by JS -->
            </div>
@@ -462,7 +530,7 @@
 
        <!-- Center: Game Board & Mobile Controls -->
        <div class="game-area" id="gameArea">
-           <div class="score-float" id="scorePanel">Skor: 0</div>
+           <div class="score-float" id="scorePanel">Markah: 0%</div>
            
            <div class="game-board" id="gameBoard">
                <div class="grid-container" id="gridContainer"></div>
@@ -493,10 +561,18 @@
            <h2 class="modal-title">🐛 Captain Pillar</h2>
            <p class="modal-text">
                Gunakan kekunci panah ⌨️<br>atau gerakkan jari (swipe) 👆 untuk bermain.<br><br>
-               <strong>Misi:</strong> Cari jawapan yang betul untuk soalan di atas!
+               <strong>Misi:</strong> Cari semua peranti digital yang hilang!
            </p>
-           <div class="legend-list" id="legendAll" style="display: none;"></div> <!-- Hidden ref -->
            <button class="btn-primary" onclick="startGameSession()">MULA ▶</button>
+       </div>
+   </div>
+
+   <!-- PAUSE OVERLAY -->
+   <div class="overlay" id="pauseOverlay">
+       <div class="modal-box">
+           <h2 class="modal-title">⏸️ Permainan Dijeda</h2>
+           <p class="modal-text">Tekan butang di bawah atau "Spacebar" untuk sambung semula.</p>
+           <button class="btn-primary" style="background: #FF9800; box-shadow: 0 6px 0 #E65100;" onclick="togglePause()">SAMBUNG ▶</button>
        </div>
    </div>
 
@@ -505,7 +581,7 @@
     <div class="modal-box">
      <div style="font-size: 4rem; margin-bottom: 0.5rem;">🎉🏆🎉</div>
      <h2 class="modal-title">Tahniah!</h2>
-     <p class="modal-text" id="finalScoreWin">Semua peranti digital ditemui!</p>
+     <p class="modal-text" id="finalScoreWin">Markah Penuh: 100%</p>
      <button class="btn-primary" onclick="showMainMenu()">MAIN LAGI ↻</button>
     </div>
    </div>
@@ -534,7 +610,7 @@
             { id: 'smartphone', icon: '📱', label: 'Telefon Pintar' },
             { id: 'tablet', icon: '📲', label: 'Tablet' },
             { id: 'desktop', icon: '🖥️', label: 'Komputer Meja' },
-            { id: 'laptop', icon: '💻', label: 'Laptop' },
+            { id: 'laptop', icon: '💻', label: 'Komputer Riba (Laptop)' },
             { id: 'smarttv', icon: '📺', label: 'Televisyen Pintar' },
             { id: 'smartwatch', icon: '⌚', label: 'Jam Pintar' },
             { id: 'camera', icon: '📷', label: 'Kamera Digital' },
@@ -542,28 +618,29 @@
         ];
 
         const wrongAnswersData = [
-            { icon: '⌨️', label: 'Mesin Taip' },
-            { icon: '☎️', label: 'Telefon Awam' },
-            { icon: '🧮', label: 'Sempoa' },
-            { icon: '📻', label: 'Radio Lama' },
-            { icon: '✉️', label: 'Surat' },
-            { icon: '📰', label: 'Surat Khabar' },
-            { icon: '🗺️', label: 'Peta Kertas' },
-            { icon: '🕰️', label: 'Jam Dinding' },
-            { icon: '🕯️', label: 'Lilin' },
-            { icon: '🪭', label: 'Kipas Tangan' }
+            { id: 'typewriter', icon: '⌨️', label: 'Mesin Taip' },
+            { id: 'publicphone', icon: '☎️', label: 'Telefon Awam' },
+            { id: 'abacus', icon: '🧮', label: 'Sempoa' },
+            { id: 'oldradio', icon: '📻', label: 'Radio Lama' },
+            { id: 'letter', icon: '✉️', label: 'Surat' },
+            { id: 'newspaper', icon: '📰', label: 'Surat Khabar' },
+            { id: 'map', icon: '🗺️', label: 'Peta Kertas' },
+            { id: 'clock', icon: '🕰️', label: 'Jam Dinding' },
+            { id: 'candle', icon: '🕯️', label: 'Lilin' },
+            { id: 'fan', icon: '🪭', label: 'Kipas Tangan' }
         ];
 
         // --- STATE ---
         let snake = [];
         let direction = {x: 1, y: 0};
         let nextDirection = {x: 1, y: 0};
-        let score = 0;
         let gameInterval;
         let isGameRunning = false;
+        let isPaused = false;
         let activeCorrectAnswers = [];
         let activeWrongAnswers = [];
         let collectedIds = new Set();
+        let eatenIds = new Set(); // Track all eaten items (correct or wrong) to remove from list
         let cellSize = 20;
 
         // --- AUDIO ---
@@ -587,16 +664,11 @@
         // --- ADAPTIVE GRID & RESIZING LOGIC ---
         
         function detectOrientationAndSetGrid() {
-            // Check if we are in portrait mode (taller than wide)
             const isPortrait = window.innerHeight > window.innerWidth;
-            
-            // Only update if dimensions change significantly to avoid reset on minor resize
             if (isPortrait) {
-                // Phone/Portrait mode
                 config.gridCols = 15;
                 config.gridRows = 22;
             } else {
-                // Desktop/Landscape mode
                 config.gridCols = 25;
                 config.gridRows = 18;
             }
@@ -606,27 +678,20 @@
             const gameArea = document.getElementById('gameArea');
             const dPad = document.querySelector('.mobile-controls');
             
-            // Calculate available height
             let availHeight = gameArea.clientHeight;
-            
-            // If D-Pad is visible (mobile), subtract its height
             if (getComputedStyle(dPad).display !== 'none') {
-                availHeight -= (dPad.offsetHeight + 20); // 20px padding margin
+                availHeight -= (dPad.offsetHeight + 20);
             }
 
             const availWidth = gameArea.clientWidth;
-
-            // Calculate max cell size to fill space as much as possible
-            const maxW = (availWidth - 4) / config.gridCols; // -4 for border safety
+            const maxW = (availWidth - 4) / config.gridCols;
             const maxH = (availHeight - 4) / config.gridRows;
             
             cellSize = Math.floor(Math.min(maxW, maxH));
             
             const gridContainer = document.getElementById('gridContainer');
-            // Explicitly set rows and cols
             gridContainer.style.gridTemplateColumns = `repeat(${config.gridCols}, ${cellSize}px)`;
             gridContainer.style.gridTemplateRows = `repeat(${config.gridRows}, ${cellSize}px)`;
-            
             gridContainer.style.width = `${config.gridCols * cellSize}px`;
             gridContainer.style.height = `${config.gridRows * cellSize}px`;
             
@@ -638,16 +703,11 @@
             });
         }
 
-        window.addEventListener('resize', () => {
-            // Note: We don't change grid dimensions on simple resize to prevent game reset
-            // But we do resize the cells
-            resizeBoard();
-        });
+        window.addEventListener('resize', () => { resizeBoard(); });
 
         // --- INIT ---
         function initGrid() {
-            detectOrientationAndSetGrid(); // Set initial grid size based on screen
-            
+            detectOrientationAndSetGrid();
             const container = document.getElementById('gridContainer');
             container.innerHTML = '';
             for (let i = 0; i < config.gridCols * config.gridRows; i++) {
@@ -661,16 +721,29 @@
         function populateSidebar() {
             const sidebar = document.getElementById('sidebarLegend');
             sidebar.innerHTML = '';
+            
+            // Combine all items, remove those that are eaten (collectedIds + any wrong items eaten if tracked, 
+            // but for simplicity, we just track collectedIds for correct ones and we can track wrong ones too)
+            
+            // To be truly neutral, we combine and sort them
             const allItems = [...correctAnswersData, ...wrongAnswersData];
             allItems.sort((a, b) => a.label.localeCompare(b.label));
-            allItems.forEach(item => {
-                sidebar.innerHTML += `
-                    <div class="mini-legend-item">
-                        <span class="mini-legend-icon">${item.icon}</span>
-                        <span>${item.label}</span>
-                    </div>
-                `;
-            });
+
+            // Filter out items that have been interacted with (eaten)
+            const remainingItems = allItems.filter(item => !eatenIds.has(item.id));
+
+            if (remainingItems.length > 0) {
+                remainingItems.forEach(item => {
+                    sidebar.innerHTML += `
+                        <div class="mini-legend-item">
+                            <span class="mini-legend-icon">${item.icon}</span>
+                            <span>${item.label}</span>
+                        </div>
+                    `;
+                });
+            } else {
+                sidebar.innerHTML += `<div class="legend-section-title" style="color:green; text-align:center;">Selesai!</div>`;
+            }
         }
 
         // --- TOUCH / SWIPE LOGIC ---
@@ -683,7 +756,7 @@
         }, {passive: false});
 
         document.getElementById('gameBoard').addEventListener('touchmove', (e) => {
-            e.preventDefault(); // Prevent scroll while playing
+            e.preventDefault();
         }, {passive: false});
 
         document.getElementById('gameBoard').addEventListener('touchend', (e) => {
@@ -693,19 +766,16 @@
         }, {passive: false});
 
         function handleSwipe(startX, startY, endX, endY) {
-            if (!isGameRunning) return;
+            if (!isGameRunning || isPaused) return;
             const diffX = endX - startX;
             const diffY = endY - startY;
 
-            // Minimum swipe distance
             if (Math.abs(diffX) < 30 && Math.abs(diffY) < 30) return;
 
             if (Math.abs(diffX) > Math.abs(diffY)) {
-                // Horizontal
                 if (diffX > 0 && direction.x === 0) nextDirection = {x: 1, y: 0};
                 else if (diffX < 0 && direction.x === 0) nextDirection = {x: -1, y: 0};
             } else {
-                // Vertical
                 if (diffY > 0 && direction.y === 0) nextDirection = {x: 0, y: 1};
                 else if (diffY < 0 && direction.y === 0) nextDirection = {x: 0, y: -1};
             }
@@ -713,8 +783,8 @@
 
         // --- D-PAD LOGIC ---
         function handleDPad(dir, e) {
-            e.preventDefault(); // Prevent focus/zoom
-            if (!isGameRunning) return;
+            e.preventDefault(); 
+            if (!isGameRunning || isPaused) return;
 
             switch(dir) {
                 case 'up': if (direction.y === 0) nextDirection = {x: 0, y: -1}; break;
@@ -727,15 +797,29 @@
         // --- GAME CONTROL ---
         function changeSpeed(val) {
             config.speed = parseInt(val);
-            if (isGameRunning) {
+            if (isGameRunning && !isPaused) {
                 clearInterval(gameInterval);
                 gameInterval = setInterval(gameLoop, config.speed);
                 document.activeElement.blur(); 
             }
         }
 
+        function togglePause() {
+            if (!isGameRunning) return;
+            isPaused = !isPaused;
+            
+            if (isPaused) {
+                document.getElementById('pauseOverlay').classList.add('active');
+                document.getElementById('pauseBtnIcon').textContent = '▶';
+            } else {
+                document.getElementById('pauseOverlay').classList.remove('active');
+                document.getElementById('pauseBtnIcon').textContent = '⏸️';
+            }
+        }
+
         function showMainMenu() {
             isGameRunning = false;
+            isPaused = false;
             clearInterval(gameInterval);
             document.querySelectorAll('.overlay').forEach(el => el.classList.remove('active'));
             document.getElementById('startOverlay').classList.add('active');
@@ -752,17 +836,17 @@
                 if(el.id !== 'startOverlay') el.classList.remove('active');
             });
 
-            // Re-detect orientation on restart to adapt to rotation changes properly
             detectOrientationAndSetGrid();
-            // Re-init grid in case dimensions changed
             initGrid();
 
             snake = [{x: 5, y: 5}, {x: 4, y: 5}, {x: 3, y: 5}];
             direction = {x: 1, y: 0};
             nextDirection = {x: 1, y: 0};
-            score = 0;
             collectedIds.clear();
+            eatenIds.clear(); // Reset eaten tracking
             isGameRunning = true;
+            isPaused = false;
+            document.getElementById('pauseBtnIcon').textContent = '⏸️';
 
             const speedSelect = document.getElementById('speedSelect');
             config.speed = parseInt(speedSelect.value);
@@ -771,6 +855,7 @@
             updateScoreDisplay();
             resizeBoard();
             renderBoard();
+            populateSidebar(); // Reset sidebar
             
             if (gameInterval) clearInterval(gameInterval);
             gameInterval = setInterval(gameLoop, config.speed);
@@ -784,7 +869,6 @@
             } else {
                 if (document.exitFullscreen) document.exitFullscreen();
             }
-            // Trigger resize after slight delay to allow transition
             setTimeout(resizeBoard, 200);
         }
 
@@ -812,7 +896,7 @@
             });
             wrongAnswersData.forEach(item => {
                 const pos = getRandomPos();
-                activeWrongAnswers.push({ ...pos, icon: item.icon });
+                activeWrongAnswers.push({ ...pos, icon: item.icon, id: item.id });
             });
         }
 
@@ -825,7 +909,6 @@
                 cell.style.width = `${cellSize}px`;
                 cell.style.height = `${cellSize}px`;
                 cell.style.fontSize = `${cellSize * 0.7}px`;
-                // Clear any leftover innerHTML from snake head
                 cell.innerHTML = '';
             });
 
@@ -848,7 +931,6 @@
                 if (cells[idx]) {
                     if (i === 0) {
                         cells[idx].classList.add('snake-head');
-                        // Inject Cute Face HTML
                         cells[idx].innerHTML = `
                             <div class="snake-face">
                                 <div class="eyes-row">
@@ -869,7 +951,7 @@
         }
 
         function gameLoop() {
-            if (!isGameRunning) return;
+            if (!isGameRunning || isPaused) return;
 
             direction = nextDirection;
             const head = { x: snake[0].x + direction.x, y: snake[0].y + direction.y };
@@ -892,14 +974,18 @@
             );
 
             if (correctIdx !== -1) {
-                collectedIds.add(activeCorrectAnswers[correctIdx].data.id);
-                score += 10;
+                const item = activeCorrectAnswers[correctIdx];
+                collectedIds.add(item.data.id);
+                eatenIds.add(item.data.id); // Add to eaten set
+                
                 playSound('eat');
                 document.getElementById('gameBoard').classList.add('flash-correct');
                 setTimeout(() => document.getElementById('gameBoard').classList.remove('flash-correct'), 300);
                 ateFood = true;
+                populateSidebar(); // Update checklist
 
                 if (collectedIds.size === correctAnswersData.length) {
+                    updateScoreDisplay(); // Update to 100%
                     gameOver(true);
                     return;
                 }
@@ -910,11 +996,16 @@
             );
 
             if (wrongIdx !== -1) {
-                score = Math.max(0, score - 5);
+                const item = activeWrongAnswers[wrongIdx];
+                eatenIds.add(item.id); // Add to eaten set so it disappears from sidebar too
+                
                 playSound('wrong');
                 document.getElementById('gameBoard').classList.add('flash-wrong');
                 setTimeout(() => document.getElementById('gameBoard').classList.remove('flash-wrong'), 300);
+                
                 activeWrongAnswers.splice(wrongIdx, 1);
+                populateSidebar(); // Update checklist to remove wrong item
+                
                 if (snake.length > 2) snake.pop();
             }
 
@@ -924,7 +1015,8 @@
         }
 
         function updateScoreDisplay() {
-            document.getElementById('scorePanel').innerText = `Skor: ${score}`;
+            const percentage = Math.round((collectedIds.size / correctAnswersData.length) * 100);
+            document.getElementById('scorePanel').innerText = `Markah: ${percentage}%`;
         }
 
         function gameOver(win) {
@@ -933,16 +1025,23 @@
             playSound(win ? 'win' : 'wrong');
             
             if (win) {
-                document.getElementById('finalScoreWin').innerText = `Markah Akhir: ${score}`;
+                document.getElementById('finalScoreWin').innerText = `Markah Penuh: 100%`;
                 document.getElementById('celebrationOverlay').classList.add('active');
             } else {
-                document.getElementById('finalScoreLose').innerText = `Markah Akhir: ${score}`;
+                const percentage = Math.round((collectedIds.size / correctAnswersData.length) * 100);
+                document.getElementById('finalScoreLose').innerText = `Markah Akhir: ${percentage}%`;
                 document.getElementById('wrongAnswerOverlay').classList.add('active');
             }
         }
 
         document.addEventListener('keydown', e => {
-            if (!isGameRunning) return;
+            if (e.code === 'Space') {
+                e.preventDefault();
+                togglePause();
+                return;
+            }
+
+            if (!isGameRunning || isPaused) return;
             switch(e.key) {
                 case 'ArrowUp': if (direction.y === 0) nextDirection = {x: 0, y: -1}; break;
                 case 'ArrowDown': if (direction.y === 0) nextDirection = {x: 0, y: 1}; break;
