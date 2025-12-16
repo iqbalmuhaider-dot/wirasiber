@@ -3,7 +3,7 @@
  <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Captain Pillar</title>
+  <title>Captain Pillar - Peranti Digital</title>
   <script src="/_sdk/element_sdk.js"></script>
   <style>
         body {
@@ -211,14 +211,70 @@
             background: #388E3C !important;
             z-index: 3;
             border-radius: 50%;
-            transform: scale(1);
+            transform: scale(1.15); /* Slightly bigger head */
+            position: relative;
+            display: flex !important;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+        }
+        
+        /* CUTE FACE CSS */
+        .snake-face {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .eyes-row {
+            display: flex;
+            gap: 15%; 
+            margin-bottom: 5%;
+            width: 65%;
+            justify-content: center;
+        }
+        
+        .eye {
+            width: 32%;
+            padding-bottom: 32%; /* Aspect ratio square */
+            background: white;
+            border-radius: 50%;
             position: relative;
         }
-        .snake-head::before, .snake-head::after {
-            content: ''; position: absolute; top: 20%; width: 25%; height: 25%; background: white; border-radius: 50%;
+        
+        .pupil {
+            position: absolute;
+            top: 25%;
+            right: 25%;
+            width: 50%;
+            height: 50%;
+            background: #333;
+            border-radius: 50%;
         }
-        .snake-head::before { left: 20%; }
-        .snake-head::after { right: 20%; }
+        
+        .mouth {
+            width: 45%;
+            height: 20%;
+            border-bottom: 0.15em solid white;
+            border-radius: 0 0 50% 50%; /* Smile curve */
+            margin-top: -5%;
+        }
+
+        .cheek {
+            position: absolute;
+            top: 55%;
+            width: 22%;
+            height: 15%;
+            background: #FF8A80; /* Pink cheeks */
+            border-radius: 50%;
+            opacity: 0.6;
+        }
+        .cheek-left { left: 5%; }
+        .cheek-right { right: 5%; }
 
         .score-float {
             position: absolute;
@@ -372,7 +428,7 @@
    <!-- 1. Header & Controls -->
    <div class="header-section" id="headerSection">
        <div class="question-bar">
-           <h1 class="question-text" id="questionText">Apakah fungsi telefon pintar?</h1>
+           <h1 class="question-text" id="questionText">Jenis-Jenis Peranti Digital?</h1>
        </div>
        <div class="controls-bar">
            
@@ -437,7 +493,7 @@
            <h2 class="modal-title">🐛 Captain Pillar</h2>
            <p class="modal-text">
                Gunakan kekunci panah ⌨️<br>atau gerakkan jari (swipe) 👆 untuk bermain.<br><br>
-               <strong>Misi:</strong> Cari jawapan yang betul!
+               <strong>Misi:</strong> Cari jawapan yang betul untuk soalan di atas!
            </p>
            <div class="legend-list" id="legendAll" style="display: none;"></div> <!-- Hidden ref -->
            <button class="btn-primary" onclick="startGameSession()">MULA ▶</button>
@@ -449,7 +505,7 @@
     <div class="modal-box">
      <div style="font-size: 4rem; margin-bottom: 0.5rem;">🎉🏆🎉</div>
      <h2 class="modal-title">Tahniah!</h2>
-     <p class="modal-text" id="finalScoreWin">Semua jawapan ditemui!</p>
+     <p class="modal-text" id="finalScoreWin">Semua peranti digital ditemui!</p>
      <button class="btn-primary" onclick="showMainMenu()">MAIN LAGI ↻</button>
     </div>
    </div>
@@ -475,29 +531,27 @@
         };
 
         const correctAnswersData = [
-            { id: 'belajar', icon: '📚', label: 'Belajar' },
-            { id: 'info', icon: '🔍', label: 'Cari Info' },
-            { id: 'call', icon: '📞', label: 'Telefon' },
-            { id: 'foto', icon: '📷', label: 'Ambil Foto' },
-            { id: 'masa', icon: '⏰', label: 'Masa/Alarm' },
-            { id: 'maps', icon: '🗺️', label: 'Peta' },
-            { id: 'buku', icon: '📖', label: 'E-Buku' },
-            { id: 'kalendar', icon: '📅', label: 'Kalendar' },
-            { id: 'hiburan', icon: '🎵', label: 'Muzik' },
-            { id: 'bank', icon: '💸', label: 'Bank Online' }
+            { id: 'smartphone', icon: '📱', label: 'Telefon Pintar' },
+            { id: 'tablet', icon: '📲', label: 'Tablet' },
+            { id: 'desktop', icon: '🖥️', label: 'Komputer Meja' },
+            { id: 'laptop', icon: '💻', label: 'Laptop' },
+            { id: 'smarttv', icon: '📺', label: 'Televisyen Pintar' },
+            { id: 'smartwatch', icon: '⌚', label: 'Jam Pintar' },
+            { id: 'camera', icon: '📷', label: 'Kamera Digital' },
+            { id: 'console', icon: '🎮', label: 'Konsol Permainan' }
         ];
 
         const wrongAnswersData = [
-            { icon: '👕', label: 'Gosok Baju' },
-            { icon: '🍚', label: 'Makan Nasi' },
-            { icon: '😴', label: 'Tidur' },
-            { icon: '🎣', label: 'Memancing' },
-            { icon: '🍳', label: 'Masak' },
-            { icon: '🧅', label: 'Kupas Bawang' },
-            { icon: '🚿', label: 'Mandi' },
-            { icon: '🌱', label: 'Tanam Pokok' },
-            { icon: '🚗', label: 'Cuci Kereta' },
-            { icon: '🧹', label: 'Menyapu' }
+            { icon: '⌨️', label: 'Mesin Taip' },
+            { icon: '☎️', label: 'Telefon Awam' },
+            { icon: '🧮', label: 'Sempoa' },
+            { icon: '📻', label: 'Radio Lama' },
+            { icon: '✉️', label: 'Surat' },
+            { icon: '📰', label: 'Surat Khabar' },
+            { icon: '🗺️', label: 'Peta Kertas' },
+            { icon: '🕰️', label: 'Jam Dinding' },
+            { icon: '🕯️', label: 'Lilin' },
+            { icon: '🪭', label: 'Kipas Tangan' }
         ];
 
         // --- STATE ---
@@ -771,6 +825,8 @@
                 cell.style.width = `${cellSize}px`;
                 cell.style.height = `${cellSize}px`;
                 cell.style.fontSize = `${cellSize * 0.7}px`;
+                // Clear any leftover innerHTML from snake head
+                cell.innerHTML = '';
             });
 
             activeCorrectAnswers.forEach(item => {
@@ -790,8 +846,24 @@
             snake.forEach((seg, i) => {
                 const idx = seg.y * config.gridCols + seg.x;
                 if (cells[idx]) {
-                    cells[idx].classList.add(i === 0 ? 'snake-head' : 'snake-segment');
-                    cells[idx].textContent = ''; 
+                    if (i === 0) {
+                        cells[idx].classList.add('snake-head');
+                        // Inject Cute Face HTML
+                        cells[idx].innerHTML = `
+                            <div class="snake-face">
+                                <div class="eyes-row">
+                                    <div class="eye"><div class="pupil"></div></div>
+                                    <div class="eye"><div class="pupil"></div></div>
+                                </div>
+                                <div class="cheek cheek-left"></div>
+                                <div class="cheek cheek-right"></div>
+                                <div class="mouth"></div>
+                            </div>
+                        `;
+                    } else {
+                        cells[idx].classList.add('snake-segment');
+                        cells[idx].textContent = ''; 
+                    }
                 }
             });
         }
