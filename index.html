@@ -6,90 +6,92 @@
   <title>Captain Pillar - Peranti Digital</title>
   <script src="/_sdk/element_sdk.js"></script>
   <style>
-        body {
+        /* --- RESET & BASIC SETUP --- */
+        * {
             box-sizing: border-box;
+            touch-action: none; /* Disable default browser touch actions */
+        }
+
+        body {
             margin: 0;
             padding: 0;
             font-family: 'Comic Sans MS', 'Chalkboard SE', 'Arial Rounded MT Bold', cursive, sans-serif;
-            overflow: hidden; /* No scroll on body */
+            overflow: hidden; /* STRICT NO SCROLL */
             background-color: #87CEEB;
             height: 100vh;
             width: 100vw;
-            touch-action: none; /* Prevent browser zooming/scrolling on touch */
+            display: flex;
+            justify-content: center;
         }
 
         #app {
             height: 100%;
             width: 100%;
+            max-width: 1200px; /* Limit max width on huge screens */
             display: flex;
             flex-direction: column;
             padding: 0.5rem;
-            box-sizing: border-box;
             position: relative;
         }
 
-        /* --- SCHOOL HEADER --- */
+        /* --- 1. SCHOOL HEADER (Compact) --- */
         .school-header {
+            flex-shrink: 0; /* Don't shrink below content size */
             text-align: center;
-            margin-bottom: 0.5rem;
+            margin-bottom: 0.3rem;
             color: #1565C0;
             text-shadow: 1px 1px 0 rgba(255,255,255,0.5);
-            animation: fadeIn 1s ease;
             display: flex;
             justify-content: center;
             align-items: center;
+            height: 50px; /* Fixed height for consistency */
         }
         
         .school-name {
-            font-size: clamp(1rem, 3vw, 1.5rem);
+            font-size: clamp(0.9rem, 2.5vw, 1.4rem);
             font-weight: 800;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 0.8rem;
+            gap: 0.5rem;
             text-transform: uppercase;
             letter-spacing: 0.5px;
+            white-space: nowrap;
         }
 
         .school-logo-img {
-            height: 60px; /* Saiz logo */
+            height: 45px;
             width: auto;
-            filter: drop-shadow(2px 2px 2px rgba(0,0,0,0.1));
-            transition: transform 0.3s ease;
-        }
-        
-        .school-logo-img:hover {
-            transform: scale(1.1);
+            filter: drop-shadow(1px 1px 2px rgba(0,0,0,0.1));
         }
 
-        /* --- HEADER SECTION --- */
+        /* --- 2. GAME CONTROLS HEADER (Compact) --- */
         .header-section {
             flex-shrink: 0;
             display: flex;
             flex-direction: column;
             align-items: center;
             gap: 0.3rem;
-            margin-bottom: 0.5rem;
+            margin-bottom: 0.3rem;
             z-index: 10;
         }
 
         .question-bar {
-            padding: 0.5rem 1rem;
-            border-radius: 15px;
+            padding: 0.3rem 1rem;
+            border-radius: 12px;
             text-align: center;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.12);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.12);
             background: #FFD700;
             width: 100%;
-            max-width: 800px;
+            max-width: 600px;
         }
 
         .question-text {
-            font-size: clamp(1rem, 3.5vw, 1.6rem);
+            font-size: clamp(0.9rem, 3vw, 1.4rem);
             font-weight: bold;
             margin: 0;
             color: #333;
-            text-shadow: 1px 1px 0px rgba(255,255,255,0.4);
-            line-height: 1.2;
+            line-height: 1.1;
         }
 
         .controls-bar {
@@ -101,91 +103,84 @@
 
         .btn-small {
             background: white;
-            border: 2px solid #ddd;
-            padding: 0.3rem 0.8rem;
-            border-radius: 20px;
+            border: 1px solid #ccc;
+            padding: 0.2rem 0.6rem;
+            border-radius: 15px;
             font-weight: bold;
             font-family: inherit;
             cursor: pointer;
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             display: flex;
             align-items: center;
-            gap: 0.3rem;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            transition: all 0.2s;
+            gap: 0.2rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            transition: all 0.1s;
             outline: none;
-            user-select: none;
         }
 
-        .btn-small:hover { transform: translateY(-2px); }
-        .btn-small:active { transform: translateY(0); }
+        .btn-small:active { transform: translateY(1px); }
+        .btn-restart { color: #d32f2f; background: #ffebee; }
+        .btn-pause { color: #f57c00; background: #fff3e0; }
+        .btn-fullscreen { color: #1976d2; background: #e3f2fd; }
 
-        .btn-restart { color: #d32f2f; border-color: #ffcdd2; background: #ffebee; }
-        .btn-pause { color: #f57c00; border-color: #ffe0b2; background: #fff3e0; }
-        .btn-fullscreen { color: #1976d2; border-color: #bbdefb; background: #e3f2fd; }
-        
-        /* --- MAIN GAME LAYOUT --- */
+        /* --- 3. MAIN GAME CONTAINER (Flexible) --- */
         .game-container {
-            flex: 1;
+            flex: 1; /* Takes remaining height */
             display: flex;
             overflow: hidden; 
-            gap: 1rem;
+            gap: 0.5rem;
             justify-content: center;
-            align-items: flex-start;
-            height: 100%;
+            align-items: stretch;
+            min-height: 0; /* Important for flex child scrolling/fitting */
         }
 
         /* LEFT SIDEBAR (Legend) */
         .sidebar {
-            width: 220px;
-            background: rgba(255, 255, 255, 0.9);
-            border-radius: 15px;
+            width: 180px;
+            background: rgba(255, 255, 255, 0.85);
+            border-radius: 12px;
             display: flex;
             flex-direction: column;
             overflow: hidden;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            height: 95%; 
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
             border: 2px solid #fff;
             flex-shrink: 0;
-            transition: all 0.3s ease;
         }
 
         .sidebar-header {
             background: #f0f4f8;
-            padding: 0.6rem;
+            padding: 0.4rem;
             text-align: center;
             font-weight: bold;
-            border-bottom: 2px solid #ddd;
-            font-size: 0.9rem;
+            border-bottom: 1px solid #ddd;
+            font-size: 0.85rem;
             color: #444;
         }
 
         .sidebar-content {
             overflow-y: auto;
-            padding: 0.5rem;
+            padding: 0.3rem;
             flex: 1;
         }
 
         .mini-legend-item {
             display: flex;
             align-items: center;
-            gap: 0.5rem;
-            padding: 0.4rem;
+            gap: 0.3rem;
+            padding: 0.3rem;
             border-bottom: 1px solid #eee;
-            font-size: 0.85rem;
-            animation: slideIn 0.3s ease;
+            font-size: 0.75rem;
+            line-height: 1.1;
         }
         
-        .mini-legend-item:last-child { border-bottom: none; }
-        .mini-legend-icon { font-size: 1.2rem; min-width: 25px; text-align: center; }
-
+        .mini-legend-icon { font-size: 1.1rem; min-width: 20px; text-align: center; }
         .legend-section-title {
-            font-size: 0.75rem;
+            font-size: 0.7rem;
             text-transform: uppercase;
             color: #666;
-            margin: 0.5rem 0 0.2rem 0;
-            padding-bottom: 0.2rem;
-            border-bottom: 2px solid #ddd;
+            margin: 0.3rem 0 0.1rem 0;
+            padding-bottom: 0.1rem;
+            border-bottom: 1px solid #ddd;
             font-weight: bold;
         }
 
@@ -197,20 +192,17 @@
             align-items: center;
             justify-content: center;
             height: 100%;
-            width: 100%;
             position: relative;
+            min-width: 0; /* Allow shrinking */
         }
 
         .game-board {
             background: #FFFFFF;
-            border: 4px solid #fff;
-            border-radius: 12px;
-            box-shadow: 0 8px 30px rgba(0,0,0,0.2);
+            border: 3px solid #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
             position: relative;
-            touch-action: none;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            /* Size controlled by JS */
         }
 
         .game-board.flash-correct { animation: flashBlue 0.5s ease; }
@@ -249,128 +241,89 @@
             display: flex !important;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
         }
         
-        /* CUTE FACE CSS */
         .snake-face {
-            width: 100%;
-            height: 100%;
-            position: relative;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
+            width: 100%; height: 100%; position: relative;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
         }
-        
-        .eyes-row {
-            display: flex;
-            gap: 15%; 
-            margin-bottom: 5%;
-            width: 65%;
-            justify-content: center;
-        }
-        
-        .eye {
-            width: 32%;
-            padding-bottom: 32%;
-            background: white;
-            border-radius: 50%;
-            position: relative;
-        }
-        
-        .pupil {
-            position: absolute;
-            top: 25%;
-            right: 25%;
-            width: 50%;
-            height: 50%;
-            background: #333;
-            border-radius: 50%;
-        }
-        
-        .mouth {
-            width: 45%;
-            height: 20%;
-            border-bottom: 0.15em solid white;
-            border-radius: 0 0 50% 50%;
-            margin-top: -5%;
-        }
-
-        .cheek {
-            position: absolute;
-            top: 55%;
-            width: 22%;
-            height: 15%;
-            background: #FF8A80;
-            border-radius: 50%;
-            opacity: 0.6;
-        }
-        .cheek-left { left: 5%; }
-        .cheek-right { right: 5%; }
+        .eyes-row { display: flex; gap: 15%; margin-bottom: 5%; width: 65%; justify-content: center; }
+        .eye { width: 32%; padding-bottom: 32%; background: white; border-radius: 50%; position: relative; }
+        .pupil { position: absolute; top: 25%; right: 25%; width: 50%; height: 50%; background: #333; border-radius: 50%; }
+        .mouth { width: 45%; height: 20%; border-bottom: 0.15em solid white; border-radius: 0 0 50% 50%; margin-top: -5%; }
+        .cheek { position: absolute; top: 55%; width: 22%; height: 15%; background: #FF8A80; border-radius: 50%; opacity: 0.6; }
+        .cheek-left { left: 5%; } .cheek-right { right: 5%; }
 
         .score-float {
             position: absolute;
-            top: 0px;
-            right: 0px;
-            background: rgba(255,255,255,0.95);
-            padding: 0.5rem 1rem;
-            border-radius: 0 0 0 15px;
+            top: 0; right: 0;
+            background: rgba(255,255,255,0.9);
+            padding: 0.3rem 0.8rem;
+            border-radius: 0 0 0 10px;
             font-weight: 800;
-            box-shadow: -2px 2px 8px rgba(0,0,0,0.15);
-            font-size: 1.1rem;
+            box-shadow: -1px 1px 5px rgba(0,0,0,0.1);
+            font-size: 0.9rem;
             color: #2E7D32;
             z-index: 5;
             pointer-events: none;
-            border: 2px solid #4CAF50;
-            border-top: none;
-            border-right: none;
+            border: 1px solid #4CAF50;
+            border-top: none; border-right: none;
         }
 
-        /* --- MOBILE D-PAD --- */
+        /* --- MOBILE CONTROLS (Compact) --- */
         .mobile-controls {
             display: none;
-            grid-template-columns: 60px 60px 60px;
-            grid-template-rows: 50px 50px;
-            gap: 10px;
-            margin-top: 10px;
+            grid-template-columns: 50px 50px 50px;
+            grid-template-rows: 45px 45px;
+            gap: 5px;
+            margin-top: 5px;
             justify-content: center;
             align-items: center;
             z-index: 20;
+            flex-shrink: 0; /* Prevent resizing */
         }
 
         .d-pad-btn {
-            background: rgba(255, 255, 255, 0.8);
-            border: 2px solid #ccc;
-            border-radius: 15px;
-            width: 100%;
-            height: 100%;
+            background: rgba(255, 255, 255, 0.7);
+            border: 1px solid #ccc;
+            border-radius: 10px;
+            width: 100%; height: 100%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.2rem;
+            box-shadow: 0 2px 0 #bbb;
+            user-select: none; cursor: pointer;
+        }
+        .d-pad-btn:active { transform: translateY(2px); box-shadow: none; background: #e3f2fd; }
+
+        /* --- TOAST NOTIFICATION --- */
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            z-index: 2000;
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
             display: flex;
             align-items: center;
-            justify-content: center;
-            font-size: 1.5rem;
-            box-shadow: 0 4px 0 #bbb;
-            user-select: none;
-            cursor: pointer;
+            gap: 8px;
         }
-
-        .d-pad-btn:active {
-            transform: translateY(4px);
-            box-shadow: 0 0 0 #bbb;
-            background: #e3f2fd;
-        }
+        .toast.show { opacity: 1; }
 
         /* --- OVERLAYS --- */
         .overlay {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.85);
             display: none;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            z-index: 100;
-            backdrop-filter: blur(5px);
+            flex-direction: column; align-items: center; justify-content: center;
+            z-index: 100; backdrop-filter: blur(5px);
         }
         .overlay.active { display: flex; }
 
@@ -379,138 +332,93 @@
             padding: 1.5rem;
             border-radius: 20px;
             text-align: center;
-            max-width: 600px;
-            width: 85%;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
-            animation: popIn 0.4s;
-            max-height: 85vh;
-            overflow-y: auto;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+            animation: popIn 0.3s;
+            max-height: 90vh;
+            display: flex; flex-direction: column;
         }
 
-        .modal-title { font-size: 2rem; margin-bottom: 0.5rem; color: #333; font-weight: 800; }
-        .modal-text { font-size: 1.1rem; color: #555; margin-bottom: 1.5rem; }
+        .modal-title { font-size: 1.8rem; margin: 0 0 0.5rem 0; color: #333; font-weight: 800; }
+        .modal-text { font-size: 1rem; color: #555; margin-bottom: 1rem; }
         
-        /* New Level Selector Styles */
-        .level-selector-container {
-            margin-bottom: 1.5rem;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 0.5rem;
-        }
-        
-        .level-label {
-            font-weight: bold;
-            color: #555;
-            font-size: 1rem;
-        }
-
-        .level-select {
-            padding: 0.8rem 1.5rem;
-            font-size: 1.1rem;
-            border-radius: 12px;
-            border: 2px solid #4CAF50;
-            background: white;
-            color: #333;
-            cursor: pointer;
-            font-family: inherit;
-            font-weight: bold;
-            outline: none;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            transition: all 0.2s;
-        }
-        
-        .level-select:hover {
-            border-color: #2E7D32;
-            box-shadow: 0 6px 8px rgba(0,0,0,0.15);
-        }
+        .level-selector-container { margin: 0.5rem 0 1rem 0; display: flex; flex-direction: column; align-items: center; gap: 0.3rem; }
+        .level-label { font-weight: bold; color: #555; font-size: 0.9rem; }
+        .level-select { padding: 0.6rem 1rem; font-size: 1rem; border-radius: 10px; border: 2px solid #4CAF50; cursor: pointer; outline: none; }
 
         .btn-primary {
             background: linear-gradient(to bottom, #4CAF50, #45a049);
-            color: white;
-            font-size: 1.3rem;
-            font-weight: bold;
-            padding: 0.8rem 2rem;
-            border: none;
-            border-radius: 50px;
-            cursor: pointer;
-            box-shadow: 0 6px 0 #2E7D32;
-            transition: transform 0.1s;
+            color: white; font-size: 1.2rem; font-weight: bold; padding: 0.6rem 2rem;
+            border: none; border-radius: 50px; cursor: pointer;
+            box-shadow: 0 4px 0 #2E7D32; transition: transform 0.1s;
+            margin-top: auto; /* Push to bottom if flex */
         }
-        .btn-primary:active { transform: translateY(4px); box-shadow: 0 2px 0 #2E7D32; }
+        .btn-primary:active { transform: translateY(4px); box-shadow: 0 1px 0 #2E7D32; }
 
-        /* --- PAUSE OVERLAY --- */
-        #pauseOverlay .modal-box {
-            background: #FFF3E0;
-            border: 4px solid #FFB74D;
-        }
-
-        /* --- RESPONSIVE ADJUSTMENTS --- */
+        /* --- RESPONSIVE LOGIC --- */
         @media (max-width: 800px) {
+            /* Mobile Layout: Stack Vertical */
             .game-container { 
                 flex-direction: column; 
-                gap: 0.5rem; 
-                justify-content: space-between;
+                gap: 0.3rem; 
             }
             
+            /* Sidebar becomes horizontal bar at bottom */
             .sidebar { 
                 width: 100%; 
-                height: auto; 
-                max-height: 120px;
+                height: 80px; /* Fixed small height */
                 order: 3;
-                border: none;
-                background: rgba(255,255,255,0.6);
+                background: rgba(255,255,255,0.8);
+                border: 1px solid #ddd;
             }
-            .sidebar-header { padding: 0.4rem; font-size: 0.8rem; }
+            .sidebar-header { display: none; } /* Hide header to save space */
             .sidebar-content {
                 display: flex;
-                flex-wrap: wrap;
+                flex-wrap: nowrap; /* Horizontal scroll */
                 gap: 0.5rem;
-                justify-content: center;
-                padding: 0.3rem;
+                padding: 0.5rem;
+                overflow-x: auto;
             }
             .mini-legend-item { 
-                border: 1px solid #ddd; 
+                border: 1px solid #ccc; 
                 background: white; 
-                border-radius: 8px; 
-                padding: 0.2rem 0.5rem; 
-                font-size: 0.75rem;
+                border-radius: 6px; 
+                padding: 0.2rem 0.4rem; 
+                font-size: 0.7rem;
+                white-space: nowrap;
+                flex-shrink: 0;
             }
-            .legend-section-title { display: none; } /* Hide headers on mobile to save space */
+            .legend-section-title { display: none; } 
             
             .game-area {
                 order: 2;
-                justify-content: flex-start;
-                flex: 1;
+                justify-content: flex-start; /* Align top */
             }
 
-            .mobile-controls {
-                display: grid;
-            }
+            /* Show D-Pad on Mobile */
+            .mobile-controls { display: grid; }
 
-            .modal-title { font-size: 1.6rem; }
-            .modal-text { font-size: 0.95rem; }
-            .btn-primary { font-size: 1.1rem; padding: 0.6rem 1.8rem; }
-            
-            .school-header { margin-bottom: 0.2rem; }
-            .school-logo-img { height: 40px; }
-            .school-name { font-size: 1rem; gap: 0.5rem; }
+            .school-logo-img { height: 35px; }
+            .school-header { height: 40px; margin-bottom: 0; }
+            .question-bar { padding: 0.3rem 0.5rem; }
         }
 
         @keyframes popIn { from { opacity: 0; transform: scale(0.8); } to { opacity: 1; transform: scale(1); } }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        @keyframes slideIn { from { opacity: 0; transform: translateX(-10px); } to { opacity: 1; transform: translateX(0); } }
     </style>
  </head>
  <body>
 
   <div id="app">
     
+   <!-- TOAST NOTIFICATION -->
+   <div id="toast" class="toast">🎮 Controller Disambung!</div>
+
    <!-- 1. School Header -->
    <div class="school-header">
        <div class="school-name">
            <img src="https://i.postimg.cc/k4N1mPR1/semat-04.png" alt="Logo SKMT" class="school-logo-img">
-           Laman Interaktif SK MASJID TANAH (INTEGRASI)
+           SK MASJID TANAH (INTEGRASI)
        </div>
    </div>
 
@@ -520,15 +428,14 @@
            <h1 class="question-text" id="questionText">Jenis-Jenis Peranti Digital?</h1>
        </div>
        <div class="controls-bar">
-           <!-- Controls -->
            <button class="btn-small btn-pause" onclick="togglePause()">
                <span id="pauseBtnIcon">⏸️</span> Jeda
            </button>
            <button class="btn-small btn-restart" onclick="showMainMenu()">
-               <span>↻</span> Menu Utama
+               <span>↻</span> Menu
            </button>
            <button class="btn-small btn-fullscreen" onclick="toggleFullScreen()">
-               <span>⛶</span> Skrin Penuh
+               <span>⛶</span> Penuh
            </button>
        </div>
    </div>
@@ -575,18 +482,32 @@
    <div class="overlay active" id="startOverlay">
        <div class="modal-box">
            <h2 class="modal-title">🐛 Captain Pillar</h2>
-           <p class="modal-text">
-               Gunakan kekunci panah ⌨️<br>atau gerakkan jari (swipe) 👆 untuk bermain.<br><br>
-               <strong>Misi:</strong> Cari semua peranti digital yang hilang!
-           </p>
            
-           <!-- Level Selector moved here -->
+           <!-- Question Box -->
+           <div style="background: #E3F2FD; padding: 10px; border-radius: 10px; margin-bottom: 10px; border: 2px solid #2196F3;">
+               <h3 style="margin: 0; color: #1565C0; font-size: 0.9rem; text-transform: uppercase;">Misi Anda:</h3>
+               <p style="margin: 3px 0 0 0; font-weight: 800; font-size: 1.1rem; color: #0D47A1;">
+                   Cari "Jenis-Jenis Peranti Digital"
+               </p>
+           </div>
+
+           <!-- Legend Display -->
+           <div style="text-align: left; width: 100%; flex: 1; overflow-y: auto; margin-bottom: 1rem; border: 1px solid #eee; border-radius: 10px; background: #f9f9f9; padding: 8px; min-height: 150px;">
+               <div style="font-weight: bold; margin-bottom: 5px; text-align: center; color: #555; font-size: 0.9rem; position: sticky; top: 0; background: #f9f9f9; border-bottom: 1px solid #ddd;">
+                   📖 Panduan Simbol:
+               </div>
+               <div id="startLegend" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 6px;">
+                   <!-- JS will populate -->
+               </div>
+           </div>
+           
+           <!-- Level Selector -->
            <div class="level-selector-container">
-               <div class="level-label">Pilih Tahap Kelajuan:</div>
+               <div class="level-label">Pilih Kelajuan:</div>
                <select id="speedSelect" class="level-select">
-                   <option value="350">🐌 Santai (Lambat)</option>
-                   <option value="200" selected>🐛 Biasa (Normal)</option>
-                   <option value="100">🚀 Laju (Pantas)</option>
+                   <option value="350">🐌 Santai</option>
+                   <option value="200" selected>🐛 Biasa</option>
+                   <option value="100">🚀 Laju</option>
                </select>
            </div>
 
@@ -596,27 +517,27 @@
 
    <!-- PAUSE OVERLAY -->
    <div class="overlay" id="pauseOverlay">
-       <div class="modal-box">
-           <h2 class="modal-title">⏸️ Permainan Dijeda</h2>
-           <p class="modal-text">Tekan butang di bawah atau "Spacebar" untuk sambung semula.</p>
-           <button class="btn-primary" style="background: #FF9800; box-shadow: 0 6px 0 #E65100;" onclick="togglePause()">SAMBUNG ▶</button>
+       <div class="modal-box" style="height: auto;">
+           <h2 class="modal-title">⏸️ Dijeda</h2>
+           <p class="modal-text">Permainan berhenti seketika.</p>
+           <button class="btn-primary" style="background: #FF9800; box-shadow: 0 4px 0 #E65100;" onclick="togglePause()">SAMBUNG ▶</button>
        </div>
    </div>
 
    <!-- WIN OVERLAY -->
    <div class="overlay" id="celebrationOverlay">
-    <div class="modal-box">
-     <div style="font-size: 4rem; margin-bottom: 0.5rem;">🎉🏆🎉</div>
+    <div class="modal-box" style="height: auto;">
+     <div style="font-size: 3.5rem; margin-bottom: 0.5rem;">🎉🏆🎉</div>
      <h2 class="modal-title">Tahniah!</h2>
-     <p class="modal-text" id="finalScoreWin">Markah Penuh: 100%</p>
-     <button class="btn-primary" onclick="showMainMenu()">MAIN LAGI ↻</button>
+     <p class="modal-text" id="finalScoreWin">Markah: 100%</p>
+     <button class="btn-primary" onclick="showMainMenu()">MENU UTAMA ↻</button>
     </div>
    </div>
 
    <!-- LOSE OVERLAY -->
    <div class="overlay" id="wrongAnswerOverlay">
-    <div class="modal-box">
-     <div style="font-size: 4rem; margin-bottom: 0.5rem;">😢💥</div>
+    <div class="modal-box" style="height: auto;">
+     <div style="font-size: 3.5rem; margin-bottom: 0.5rem;">😢💥</div>
      <h2 class="modal-title">Tamat</h2>
      <p class="modal-text" id="finalScoreLose">Terlanggar!</p>
      <button class="btn-primary" onclick="showMainMenu()">CUBA LAGI ↻</button>
@@ -628,7 +549,7 @@
   <script>
         // --- CONFIG & DATA ---
         let config = {
-            gridCols: 25, // Default Landscape
+            gridCols: 25, 
             gridRows: 18, 
             speed: 200
         };
@@ -637,11 +558,11 @@
             { id: 'smartphone', icon: '📱', label: 'Telefon Pintar' },
             { id: 'tablet', icon: '📲', label: 'Tablet' },
             { id: 'desktop', icon: '🖥️', label: 'Komputer Meja' },
-            { id: 'laptop', icon: '💻', label: 'Komputer Riba (Laptop)' },
-            { id: 'smarttv', icon: '📺', label: 'Televisyen Pintar' },
+            { id: 'laptop', icon: '💻', label: 'Laptop' },
+            { id: 'smarttv', icon: '📺', label: 'TV Pintar' },
             { id: 'smartwatch', icon: '⌚', label: 'Jam Pintar' },
             { id: 'camera', icon: '📷', label: 'Kamera Digital' },
-            { id: 'console', icon: '🎮', label: 'Konsol Permainan' }
+            { id: 'console', icon: '🎮', label: 'Konsol' }
         ];
 
         const wrongAnswersData = [
@@ -668,7 +589,7 @@
         let activeWrongAnswers = [];
         let collectedIds = new Set();
         let eatenIds = new Set();
-        let penaltyScore = 0; // NEW: Track penalty points
+        let penaltyScore = 0;
         let cellSize = 20;
 
         // --- AUDIO ---
@@ -693,12 +614,13 @@
         
         function detectOrientationAndSetGrid() {
             const isPortrait = window.innerHeight > window.innerWidth;
+            // More conservative grid sizes to ensure fit
             if (isPortrait) {
                 config.gridCols = 15;
-                config.gridRows = 22;
+                config.gridRows = 20; 
             } else {
                 config.gridCols = 25;
-                config.gridRows = 18;
+                config.gridRows = 16;
             }
         }
 
@@ -706,16 +628,22 @@
             const gameArea = document.getElementById('gameArea');
             const dPad = document.querySelector('.mobile-controls');
             
+            // Calculate available height explicitly
             let availHeight = gameArea.clientHeight;
+            
+            // Subtract D-Pad height if visible
             if (getComputedStyle(dPad).display !== 'none') {
-                availHeight -= (dPad.offsetHeight + 20);
+                availHeight -= (dPad.offsetHeight + 10); 
             }
 
             const availWidth = gameArea.clientWidth;
-            const maxW = (availWidth - 4) / config.gridCols;
-            const maxH = (availHeight - 4) / config.gridRows;
+
+            // Calculate max cell size
+            // Use Math.floor to ensure integers, prevent sub-pixel blurring/overflow
+            const maxW = Math.floor((availWidth - 10) / config.gridCols);
+            const maxH = Math.floor((availHeight - 10) / config.gridRows);
             
-            cellSize = Math.floor(Math.min(maxW, maxH));
+            cellSize = Math.max(10, Math.min(maxW, maxH)); // Minimum 10px size
             
             const gridContainer = document.getElementById('gridContainer');
             gridContainer.style.gridTemplateColumns = `repeat(${config.gridCols}, ${cellSize}px)`;
@@ -723,15 +651,66 @@
             gridContainer.style.width = `${config.gridCols * cellSize}px`;
             gridContainer.style.height = `${config.gridRows * cellSize}px`;
             
+            // Update fontSize for icons
             const cells = document.querySelectorAll('.grid-cell');
+            const fontSize = Math.floor(cellSize * 0.7) + 'px';
             cells.forEach(c => {
-                c.style.width = `${cellSize}px`;
-                c.style.height = `${cellSize}px`;
-                c.style.fontSize = `${cellSize * 0.7}px`;
+                c.style.fontSize = fontSize;
             });
         }
 
         window.addEventListener('resize', () => { resizeBoard(); });
+
+        // --- GAMEPAD LOGIC ---
+        let gamepadIndex = null;
+        let gpButtonState = { pause: false };
+
+        window.addEventListener("gamepadconnected", (e) => {
+            gamepadIndex = e.gamepad.index;
+            showToast("🎮 Controller Disambung!");
+        });
+
+        window.addEventListener("gamepaddisconnected", (e) => {
+            if (gamepadIndex === e.gamepad.index) {
+                gamepadIndex = null;
+                showToast("❌ Controller Terputus");
+            }
+        });
+
+        function pollGamepad() {
+            if (gamepadIndex !== null) {
+                const gamepad = navigator.getGamepads()[gamepadIndex];
+                if (gamepad) {
+                    const threshold = 0.5;
+                    const isPressed = (btnIdx, axisIdx, val) => {
+                        return (gamepad.buttons[btnIdx] && gamepad.buttons[btnIdx].pressed) || 
+                               (gamepad.axes[axisIdx] && (val < 0 ? gamepad.axes[axisIdx] < val : gamepad.axes[axisIdx] > val));
+                    };
+
+                    const up = isPressed(12, 1, -threshold);
+                    const down = isPressed(13, 1, threshold);
+                    const left = isPressed(14, 0, -threshold);
+                    const right = isPressed(15, 0, threshold);
+                    const pause = gamepad.buttons[9] && gamepad.buttons[9].pressed; 
+
+                    if (up && direction.y === 0) nextDirection = {x: 0, y: -1};
+                    if (down && direction.y === 0) nextDirection = {x: 0, y: 1};
+                    if (left && direction.x === 0) nextDirection = {x: -1, y: 0};
+                    if (right && direction.x === 0) nextDirection = {x: 1, y: 0};
+
+                    if (pause && !gpButtonState.pause) { togglePause(); }
+                    gpButtonState.pause = pause;
+                }
+            }
+            requestAnimationFrame(pollGamepad);
+        }
+
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            toast.textContent = msg;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 3000);
+        }
 
         // --- INIT ---
         function initGrid() {
@@ -743,18 +722,20 @@
                 cell.className = 'grid-cell';
                 container.appendChild(cell);
             }
-            setTimeout(resizeBoard, 50);
+            // Use RequestAnimationFrame for layout stability
+            requestAnimationFrame(() => {
+                resizeBoard();
+                populateStartLegend();
+                pollGamepad(); // Start gamepad polling
+            });
         }
 
         function populateSidebar() {
             const sidebar = document.getElementById('sidebarLegend');
             sidebar.innerHTML = '';
             
-            // Neutral list of all symbols
             const allItems = [...correctAnswersData, ...wrongAnswersData];
             allItems.sort((a, b) => a.label.localeCompare(b.label));
-
-            // Filter out items that have been eaten (removed from map)
             const remainingItems = allItems.filter(item => !eatenIds.has(item.id));
 
             if (remainingItems.length > 0) {
@@ -771,7 +752,22 @@
             }
         }
 
-        // --- TOUCH / SWIPE LOGIC ---
+        function populateStartLegend() {
+            const container = document.getElementById('startLegend');
+            container.innerHTML = '';
+            const allItems = [...correctAnswersData, ...wrongAnswersData];
+            allItems.sort((a, b) => a.label.localeCompare(b.label));
+            allItems.forEach(item => {
+                container.innerHTML += `
+                    <div style="display: flex; align-items: center; gap: 5px; background: white; padding: 4px 8px; border-radius: 6px; border: 1px solid #ddd; font-size: 0.75rem; box-shadow: 0 1px 1px rgba(0,0,0,0.05);">
+                        <span style="font-size: 1rem;">${item.icon}</span>
+                        <span style="font-weight: 600; color: #444; line-height:1.1;">${item.label}</span>
+                    </div>
+                `;
+            });
+        }
+
+        // --- INPUTS ---
         let touchStartX = 0;
         let touchStartY = 0;
 
@@ -780,9 +776,7 @@
             touchStartY = e.changedTouches[0].screenY;
         }, {passive: false});
 
-        document.getElementById('gameBoard').addEventListener('touchmove', (e) => {
-            e.preventDefault();
-        }, {passive: false});
+        document.getElementById('gameBoard').addEventListener('touchmove', (e) => e.preventDefault(), {passive: false});
 
         document.getElementById('gameBoard').addEventListener('touchend', (e) => {
             const touchEndX = e.changedTouches[0].screenX;
@@ -794,9 +788,7 @@
             if (!isGameRunning || isPaused) return;
             const diffX = endX - startX;
             const diffY = endY - startY;
-
             if (Math.abs(diffX) < 30 && Math.abs(diffY) < 30) return;
-
             if (Math.abs(diffX) > Math.abs(diffY)) {
                 if (diffX > 0 && direction.x === 0) nextDirection = {x: 1, y: 0};
                 else if (diffX < 0 && direction.x === 0) nextDirection = {x: -1, y: 0};
@@ -806,11 +798,9 @@
             }
         }
 
-        // --- D-PAD LOGIC ---
         function handleDPad(dir, e) {
             e.preventDefault(); 
             if (!isGameRunning || isPaused) return;
-
             switch(dir) {
                 case 'up': if (direction.y === 0) nextDirection = {x: 0, y: -1}; break;
                 case 'down': if (direction.y === 0) nextDirection = {x: 0, y: 1}; break;
@@ -832,7 +822,6 @@
         function togglePause() {
             if (!isGameRunning) return;
             isPaused = !isPaused;
-            
             if (isPaused) {
                 document.getElementById('pauseOverlay').classList.add('active');
                 document.getElementById('pauseBtnIcon').textContent = '▶';
@@ -869,7 +858,7 @@
             nextDirection = {x: 1, y: 0};
             collectedIds.clear();
             eatenIds.clear(); 
-            penaltyScore = 0; // Reset penalty score
+            penaltyScore = 0;
             isGameRunning = true;
             isPaused = false;
             document.getElementById('pauseBtnIcon').textContent = '⏸️';
@@ -881,7 +870,7 @@
             updateScoreDisplay();
             resizeBoard();
             renderBoard();
-            populateSidebar(); 
+            populateSidebar();
             
             if (gameInterval) clearInterval(gameInterval);
             gameInterval = setInterval(gameLoop, config.speed);
@@ -889,9 +878,7 @@
 
         function toggleFullScreen() {
             if (!document.fullscreenElement) {
-                document.documentElement.requestFullscreen().catch(err => {
-                    console.log(err);
-                });
+                document.documentElement.requestFullscreen().catch(err => console.log(err));
             } else {
                 if (document.exitFullscreen) document.exitFullscreen();
             }
@@ -928,15 +915,12 @@
 
         function renderBoard() {
             const cells = document.querySelectorAll('.grid-cell');
-            cells.forEach(cell => {
-                cell.textContent = '';
-                cell.className = 'grid-cell';
-                cell.style.opacity = '1';
-                cell.style.width = `${cellSize}px`;
-                cell.style.height = `${cellSize}px`;
-                cell.style.fontSize = `${cellSize * 0.7}px`;
-                cell.innerHTML = '';
-            });
+            // Quick clear
+            for (let i = 0; i < cells.length; i++) {
+                cells[i].className = 'grid-cell';
+                cells[i].textContent = '';
+                cells[i].style.fontSize = Math.floor(cellSize * 0.7) + 'px';
+            }
 
             activeCorrectAnswers.forEach(item => {
                 if (collectedIds.has(item.data.id)) return;
@@ -948,7 +932,7 @@
                 const idx = item.y * config.gridCols + item.x;
                 if (cells[idx]) {
                     cells[idx].textContent = item.icon;
-                    cells[idx].style.opacity = '0.6';
+                    cells[idx].style.opacity = '0.7';
                 }
             });
 
@@ -966,11 +950,9 @@
                                 <div class="cheek cheek-left"></div>
                                 <div class="cheek cheek-right"></div>
                                 <div class="mouth"></div>
-                            </div>
-                        `;
+                            </div>`;
                     } else {
                         cells[idx].classList.add('snake-segment');
-                        cells[idx].textContent = ''; 
                     }
                 }
             });
@@ -982,6 +964,7 @@
             direction = nextDirection;
             const head = { x: snake[0].x + direction.x, y: snake[0].y + direction.y };
 
+            // Wrap logic
             if (head.x < 0) head.x = config.gridCols - 1;
             if (head.x >= config.gridCols) head.x = 0;
             if (head.y < 0) head.y = config.gridRows - 1;
@@ -1002,16 +985,16 @@
             if (correctIdx !== -1) {
                 const item = activeCorrectAnswers[correctIdx];
                 collectedIds.add(item.data.id);
-                eatenIds.add(item.data.id); 
-                
+                eatenIds.add(item.data.id);
                 playSound('eat');
-                document.getElementById('gameBoard').classList.add('flash-correct');
-                setTimeout(() => document.getElementById('gameBoard').classList.remove('flash-correct'), 300);
+                const board = document.getElementById('gameBoard');
+                board.classList.add('flash-correct');
+                setTimeout(() => board.classList.remove('flash-correct'), 300);
                 ateFood = true;
-                populateSidebar(); 
+                populateSidebar();
 
                 if (collectedIds.size === correctAnswersData.length) {
-                    updateScoreDisplay(); 
+                    updateScoreDisplay();
                     gameOver(true);
                     return;
                 }
@@ -1023,18 +1006,14 @@
 
             if (wrongIdx !== -1) {
                 const item = activeWrongAnswers[wrongIdx];
-                eatenIds.add(item.id); 
-                
-                // PENALTY LOGIC: Deduct 5% per wrong answer
+                eatenIds.add(item.id);
                 penaltyScore += 5;
-
                 playSound('wrong');
-                document.getElementById('gameBoard').classList.add('flash-wrong');
-                setTimeout(() => document.getElementById('gameBoard').classList.remove('flash-wrong'), 300);
-                
+                const board = document.getElementById('gameBoard');
+                board.classList.add('flash-wrong');
+                setTimeout(() => board.classList.remove('flash-wrong'), 300);
                 activeWrongAnswers.splice(wrongIdx, 1);
-                populateSidebar(); 
-                
+                populateSidebar();
                 if (snake.length > 2) snake.pop();
             }
 
@@ -1053,27 +1032,20 @@
             isGameRunning = false;
             clearInterval(gameInterval);
             playSound(win ? 'win' : 'wrong');
-            
-            // Calculate final score for game over screen
             const baseScore = (collectedIds.size / correctAnswersData.length) * 100;
             const finalScore = Math.max(0, Math.round(baseScore - penaltyScore));
 
             if (win) {
-                document.getElementById('finalScoreWin').innerText = `Markah Penuh: ${finalScore}%`;
+                document.getElementById('finalScoreWin').innerText = `Markah: ${finalScore}%`;
                 document.getElementById('celebrationOverlay').classList.add('active');
             } else {
-                document.getElementById('finalScoreLose').innerText = `Markah Akhir: ${finalScore}%`;
+                document.getElementById('finalScoreLose').innerText = `Markah: ${finalScore}%`;
                 document.getElementById('wrongAnswerOverlay').classList.add('active');
             }
         }
 
         document.addEventListener('keydown', e => {
-            if (e.code === 'Space') {
-                e.preventDefault();
-                togglePause();
-                return;
-            }
-
+            if (e.code === 'Space') { e.preventDefault(); togglePause(); return; }
             if (!isGameRunning || isPaused) return;
             switch(e.key) {
                 case 'ArrowUp': if (direction.y === 0) nextDirection = {x: 0, y: -1}; break;
