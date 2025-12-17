@@ -124,17 +124,6 @@
         .btn-pause { color: #f57c00; border-color: #ffe0b2; background: #fff3e0; }
         .btn-fullscreen { color: #1976d2; border-color: #bbdefb; background: #e3f2fd; }
         
-        select.btn-small {
-            appearance: none;
-            -webkit-appearance: none;
-            padding-right: 1.8rem;
-            background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23333%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E");
-            background-repeat: no-repeat;
-            background-position: right 0.6rem top 50%;
-            background-size: 0.6rem auto;
-            color: #333;
-        }
-
         /* --- MAIN GAME LAYOUT --- */
         .game-container {
             flex: 1;
@@ -401,6 +390,41 @@
         .modal-title { font-size: 2rem; margin-bottom: 0.5rem; color: #333; font-weight: 800; }
         .modal-text { font-size: 1.1rem; color: #555; margin-bottom: 1.5rem; }
         
+        /* New Level Selector Styles */
+        .level-selector-container {
+            margin-bottom: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .level-label {
+            font-weight: bold;
+            color: #555;
+            font-size: 1rem;
+        }
+
+        .level-select {
+            padding: 0.8rem 1.5rem;
+            font-size: 1.1rem;
+            border-radius: 12px;
+            border: 2px solid #4CAF50;
+            background: white;
+            color: #333;
+            cursor: pointer;
+            font-family: inherit;
+            font-weight: bold;
+            outline: none;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: all 0.2s;
+        }
+        
+        .level-select:hover {
+            border-color: #2E7D32;
+            box-shadow: 0 6px 8px rgba(0,0,0,0.15);
+        }
+
         .btn-primary {
             background: linear-gradient(to bottom, #4CAF50, #45a049);
             color: white;
@@ -496,20 +520,12 @@
            <h1 class="question-text" id="questionText">Jenis-Jenis Peranti Digital?</h1>
        </div>
        <div class="controls-bar">
-           
-           <!-- Speed Selector -->
-           <select id="speedSelect" class="btn-small" onchange="changeSpeed(this.value)" title="Laraskan Kelajuan">
-               <option value="350">🐌 Santai</option>
-               <option value="200" selected>🐛 Biasa</option>
-               <option value="100">🚀 Laju</option>
-           </select>
-
            <!-- Controls -->
            <button class="btn-small btn-pause" onclick="togglePause()">
                <span id="pauseBtnIcon">⏸️</span> Jeda
            </button>
            <button class="btn-small btn-restart" onclick="showMainMenu()">
-               <span>↻</span> Mula Semula
+               <span>↻</span> Menu Utama
            </button>
            <button class="btn-small btn-fullscreen" onclick="toggleFullScreen()">
                <span>⛶</span> Skrin Penuh
@@ -563,6 +579,17 @@
                Gunakan kekunci panah ⌨️<br>atau gerakkan jari (swipe) 👆 untuk bermain.<br><br>
                <strong>Misi:</strong> Cari semua peranti digital yang hilang!
            </p>
+           
+           <!-- Level Selector moved here -->
+           <div class="level-selector-container">
+               <div class="level-label">Pilih Tahap Kelajuan:</div>
+               <select id="speedSelect" class="level-select">
+                   <option value="350">🐌 Santai (Lambat)</option>
+                   <option value="200" selected>🐛 Biasa (Normal)</option>
+                   <option value="100">🚀 Laju (Pantas)</option>
+               </select>
+           </div>
+
            <button class="btn-primary" onclick="startGameSession()">MULA ▶</button>
        </div>
    </div>
@@ -640,7 +667,8 @@
         let activeCorrectAnswers = [];
         let activeWrongAnswers = [];
         let collectedIds = new Set();
-        let eatenIds = new Set(); // Track all eaten items (correct or wrong) to remove from list
+        let eatenIds = new Set();
+        let penaltyScore = 0; // NEW: Track penalty points
         let cellSize = 20;
 
         // --- AUDIO ---
@@ -722,14 +750,11 @@
             const sidebar = document.getElementById('sidebarLegend');
             sidebar.innerHTML = '';
             
-            // Combine all items, remove those that are eaten (collectedIds + any wrong items eaten if tracked, 
-            // but for simplicity, we just track collectedIds for correct ones and we can track wrong ones too)
-            
-            // To be truly neutral, we combine and sort them
+            // Neutral list of all symbols
             const allItems = [...correctAnswersData, ...wrongAnswersData];
             allItems.sort((a, b) => a.label.localeCompare(b.label));
 
-            // Filter out items that have been interacted with (eaten)
+            // Filter out items that have been eaten (removed from map)
             const remainingItems = allItems.filter(item => !eatenIds.has(item.id));
 
             if (remainingItems.length > 0) {
@@ -843,7 +868,8 @@
             direction = {x: 1, y: 0};
             nextDirection = {x: 1, y: 0};
             collectedIds.clear();
-            eatenIds.clear(); // Reset eaten tracking
+            eatenIds.clear(); 
+            penaltyScore = 0; // Reset penalty score
             isGameRunning = true;
             isPaused = false;
             document.getElementById('pauseBtnIcon').textContent = '⏸️';
@@ -855,7 +881,7 @@
             updateScoreDisplay();
             resizeBoard();
             renderBoard();
-            populateSidebar(); // Reset sidebar
+            populateSidebar(); 
             
             if (gameInterval) clearInterval(gameInterval);
             gameInterval = setInterval(gameLoop, config.speed);
@@ -976,16 +1002,16 @@
             if (correctIdx !== -1) {
                 const item = activeCorrectAnswers[correctIdx];
                 collectedIds.add(item.data.id);
-                eatenIds.add(item.data.id); // Add to eaten set
+                eatenIds.add(item.data.id); 
                 
                 playSound('eat');
                 document.getElementById('gameBoard').classList.add('flash-correct');
                 setTimeout(() => document.getElementById('gameBoard').classList.remove('flash-correct'), 300);
                 ateFood = true;
-                populateSidebar(); // Update checklist
+                populateSidebar(); 
 
                 if (collectedIds.size === correctAnswersData.length) {
-                    updateScoreDisplay(); // Update to 100%
+                    updateScoreDisplay(); 
                     gameOver(true);
                     return;
                 }
@@ -997,14 +1023,17 @@
 
             if (wrongIdx !== -1) {
                 const item = activeWrongAnswers[wrongIdx];
-                eatenIds.add(item.id); // Add to eaten set so it disappears from sidebar too
+                eatenIds.add(item.id); 
                 
+                // PENALTY LOGIC: Deduct 5% per wrong answer
+                penaltyScore += 5;
+
                 playSound('wrong');
                 document.getElementById('gameBoard').classList.add('flash-wrong');
                 setTimeout(() => document.getElementById('gameBoard').classList.remove('flash-wrong'), 300);
                 
                 activeWrongAnswers.splice(wrongIdx, 1);
-                populateSidebar(); // Update checklist to remove wrong item
+                populateSidebar(); 
                 
                 if (snake.length > 2) snake.pop();
             }
@@ -1015,8 +1044,9 @@
         }
 
         function updateScoreDisplay() {
-            const percentage = Math.round((collectedIds.size / correctAnswersData.length) * 100);
-            document.getElementById('scorePanel').innerText = `Markah: ${percentage}%`;
+            const baseScore = (collectedIds.size / correctAnswersData.length) * 100;
+            const finalScore = Math.max(0, Math.round(baseScore - penaltyScore));
+            document.getElementById('scorePanel').innerText = `Markah: ${finalScore}%`;
         }
 
         function gameOver(win) {
@@ -1024,12 +1054,15 @@
             clearInterval(gameInterval);
             playSound(win ? 'win' : 'wrong');
             
+            // Calculate final score for game over screen
+            const baseScore = (collectedIds.size / correctAnswersData.length) * 100;
+            const finalScore = Math.max(0, Math.round(baseScore - penaltyScore));
+
             if (win) {
-                document.getElementById('finalScoreWin').innerText = `Markah Penuh: 100%`;
+                document.getElementById('finalScoreWin').innerText = `Markah Penuh: ${finalScore}%`;
                 document.getElementById('celebrationOverlay').classList.add('active');
             } else {
-                const percentage = Math.round((collectedIds.size / correctAnswersData.length) * 100);
-                document.getElementById('finalScoreLose').innerText = `Markah Akhir: ${percentage}%`;
+                document.getElementById('finalScoreLose').innerText = `Markah Akhir: ${finalScore}%`;
                 document.getElementById('wrongAnswerOverlay').classList.add('active');
             }
         }
